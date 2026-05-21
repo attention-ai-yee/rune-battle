@@ -138,11 +138,13 @@ const Card: React.FC<CardProps> = ({
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
       className={`
-        relative w-[110px] h-[155px] rounded-lg border-2
+        relative rounded-lg border-2
         ${borderClass} ${colors.bg} ${glowClass}
         transition-all duration-200 ease-out
-        flex flex-col p-2 cursor-pointer
-        ${canClick ? 'hover:scale-110 hover:-translate-y-5 hover:z-20' : 'opacity-60 cursor-not-allowed'}
+        flex flex-col p-1.5 sm:p-2 cursor-pointer touch-target
+        /* Desktop: 110x155, Mobile: 75x105 */
+        w-[75px] h-[105px] sm:w-[110px] sm:h-[155px]
+        ${canClick ? 'hover:scale-110 hover:-translate-y-5 hover:z-20 sm:hover:scale-110 sm:hover:-translate-y-5 active:scale-95 active:-translate-y-2 sm:active:scale-95' : 'opacity-60 cursor-not-allowed'}
         ${isSelected ? 'scale-110 -translate-y-5 z-20 ring-2 ring-rune-gold' : ''}
         ${!canClick && !isSelected ? 'opacity-60' : ''}
         ${upgradeGlow}
@@ -151,55 +153,55 @@ const Card: React.FC<CardProps> = ({
       `}
     >
       {/* Cost badge */}
-      <div className="absolute -top-2 -left-2 w-7 h-7 rounded-full bg-rune-dark border-2 border-rune-gold flex items-center justify-center z-10">
-        <span className="text-rune-gold text-sm font-bold">{card.cost}</span>
+      <div className="absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-rune-dark border-2 border-rune-gold flex items-center justify-center z-10">
+        <span className="text-rune-gold text-[10px] sm:text-sm font-bold">{card.cost}</span>
       </div>
 
       {/* Type badge */}
-      <div className={`absolute -top-2 -right-2 px-1.5 py-0.5 rounded text-xs font-bold ${colors.badge} z-10`}>
+      <div className={`absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-xs font-bold ${colors.badge} z-10`}>
         {icon}
       </div>
 
       {/* Retain pin indicator */}
       {isRetained && (
-        <div className="absolute -top-2 right-4 text-sm z-10 animate-pulse">📌</div>
+        <div className="absolute -top-1.5 right-3 sm:-top-2 sm:right-4 text-[10px] sm:text-sm z-10 animate-pulse">📌</div>
       )}
 
       {/* Card name with upgrade indicator */}
-      <div className={`text-center text-sm font-bold mt-2 ${colors.text} drop-shadow-md`}>
+      <div className={`text-center text-[9px] sm:text-sm font-bold mt-1 sm:mt-2 ${colors.text} drop-shadow-md`}>
         {card.name}
-        {card.upgraded && <span className="text-amber-400 text-xs ml-0.5">+</span>}
+        {card.upgraded && <span className="text-amber-400 text-[8px] sm:text-xs ml-0.5">+</span>}
       </div>
 
       {/* Divider */}
-      <div className={`mx-auto w-3/4 h-px my-1.5 ${colors.border.replace('border-', 'bg-')}`}></div>
+      <div className={`mx-auto w-3/4 h-px my-0.5 sm:my-1.5 ${colors.border.replace('border-', 'bg-')}`}></div>
 
       {/* Description */}
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-center text-xs text-gray-300 leading-tight px-1">
+        <p className="text-center text-[7px] sm:text-xs text-gray-300 leading-tight px-0.5 sm:px-1">
           {card.description}
         </p>
       </div>
 
       {/* Exhaust label */}
       {card.exhaust && (
-        <div className="text-center text-[10px] text-red-400 font-bold mt-0.5">
+        <div className="text-center text-[7px] sm:text-[10px] text-red-400 font-bold mt-0.5">
           消耗
         </div>
       )}
 
       {/* Retain label for cards with innate retain */}
       {card.retain && !card.exhaust && (
-        <div className="text-center text-[10px] text-cyan-400 font-bold mt-0.5">
+        <div className="text-center text-[7px] sm:text-[10px] text-cyan-400 font-bold mt-0.5">
           保留
         </div>
       )}
 
       {/* Bottom type indicator + rarity stars */}
-      <div className="flex items-center justify-between mt-1">
-        <div className={`h-1 flex-1 rounded-full ${colors.text.replace('text-', 'bg-')}/30`}></div>
+      <div className="flex items-center justify-between mt-0.5 sm:mt-1">
+        <div className={`h-0.5 sm:h-1 flex-1 rounded-full ${colors.text.replace('text-', 'bg-')}/30`}></div>
         {rarityStars && (
-          <span className={`text-[10px] ml-1 ${rarityStyle.stars}`}>
+          <span className={`text-[7px] sm:text-[10px] ml-1 ${rarityStyle.stars}`}>
             {rarityStars}
           </span>
         )}

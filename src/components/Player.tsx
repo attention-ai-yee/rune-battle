@@ -25,18 +25,18 @@ const Player: React.FC<PlayerProps> = ({ player, deckSize, discardSize, playerSt
   const freezeStacks = getStatusValue(player.statusEffects, 'freeze');
 
   return (
-    <div className="flex items-center gap-4 px-4 py-3 bg-gradient-to-r from-gray-900/80 via-gray-800/60 to-gray-900/80 rounded-xl border border-gray-700/40">
+    <div className="flex items-center gap-2 sm:gap-4 px-2 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-gray-900/80 via-gray-800/60 to-gray-900/80 rounded-xl border border-gray-700/40">
       {/* Player avatar */}
-      <div className="text-3xl">🧙</div>
+      <div className="text-2xl sm:text-3xl">🧙</div>
 
       {/* Player info */}
       <div className="flex-1 min-w-0">
         {/* Name */}
-        <div className="text-sm font-bold text-rune-gold mb-1">冒险者</div>
+        <div className="text-[10px] sm:text-sm font-bold text-rune-gold mb-0.5 sm:mb-1">冒险者</div>
 
         {/* HP Bar */}
-        <div className="mb-1">
-          <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
+        <div className="mb-0.5 sm:mb-1">
+          <div className="h-2 sm:h-3 bg-gray-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 isLowHp ? 'hp-bar-low' : 'hp-bar'
@@ -44,15 +44,15 @@ const Player: React.FC<PlayerProps> = ({ player, deckSize, discardSize, playerSt
               style={{ width: `${hpPercent}%` }}
             />
           </div>
-          <div className="flex items-center justify-between mt-0.5">
-            <span className={`text-xs font-bold ${isLowHp ? 'text-rune-red' : 'text-rune-green'}`}>
+          <div className="flex items-center justify-between mt-0">
+            <span className={`text-[9px] sm:text-xs font-bold ${isLowHp ? 'text-rune-red' : 'text-rune-green'}`}>
               ❤️ {player.hp}/{player.maxHp}
             </span>
           </div>
         </div>
 
         {/* Status indicators */}
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-1.5 sm:gap-3 text-[8px] sm:text-xs flex-wrap">
           {player.armor > 0 && (
             <span className="text-rune-blue font-bold">
               🛡️ {player.armor}
@@ -80,10 +80,10 @@ const Player: React.FC<PlayerProps> = ({ player, deckSize, discardSize, playerSt
             </span>
           )}
           <span className="text-gray-500">
-            📚 牌库 {deckSize}
+            📚 {deckSize}
           </span>
           <span className="text-gray-500">
-            🗑️ 弃牌 {discardSize}
+            🗑️ {discardSize}
           </span>
         </div>
       </div>

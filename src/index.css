@@ -3,9 +3,29 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    /* Prevent overscroll bounce on mobile */
+    overscroll-behavior: none;
+    /* Prevent pull-to-refresh on mobile */
+    overscroll-behavior-y: contain;
+  }
+
   body {
     @apply bg-rune-dark text-gray-100 select-none;
     font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    /* Disable text selection on touch devices */
+    -webkit-touch-callout: none;
+    /* Improve touch responsiveness */
+    touch-action: manipulation;
+    /* Prevent tap highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
+    /* Safe area insets for notched devices */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* Responsive font scaling */
+  html {
+    font-size: clamp(12px, 2.5vw, 16px);
   }
 
   ::-webkit-scrollbar {
@@ -77,5 +97,46 @@
   .enemy-hp-bar {
     background: linear-gradient(90deg, #dc2626, #f87171);
     box-shadow: 0 0 4px rgba(220, 38, 38, 0.4);
+  }
+
+  /* Mobile touch feedback - active state for buttons */
+  @media (hover: none) and (pointer: coarse) {
+    .touch-active:active {
+      transform: scale(0.95);
+      opacity: 0.85;
+      transition: transform 0.1s ease, opacity 0.1s ease;
+    }
+
+    /* Disable hover effects on touch devices to prevent sticky hover */
+    .hover\:scale-105:hover,
+    .hover\:scale-110:hover {
+      transform: none;
+    }
+  }
+}
+
+@layer utilities {
+  /* Minimum touch target size */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Mobile card size override */
+  .card-mobile {
+    @media (max-width: 640px) {
+      width: 75px;
+      height: 105px;
+    }
+  }
+
+  /* Mobile-friendly scrollbar for horizontal scroll areas */
+  .scroll-snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scroll-snap-center {
+    scroll-snap-align: center;
   }
 }
