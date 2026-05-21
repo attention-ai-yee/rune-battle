@@ -63,8 +63,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
       `}
     >
       {/* Top: Enemy area */}
-      <div className="flex-0 pt-1 sm:pt-4 px-2 sm:px-4">
-        <div className="flex items-center justify-center gap-2 sm:gap-6 flex-wrap">
+      <div className="flex-0 pt-2 sm:pt-4 px-2 sm:px-4">
+        <div className="flex items-center justify-center gap-1 sm:gap-6 flex-wrap">
           {enemies.map((enemy, index) => (
             <Enemy
               key={enemy.instanceId}
@@ -84,8 +84,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
         </div>
       </div>
 
-      {/* Middle: Battle info area - compact on mobile */}
-      <div className="flex-1 flex items-center justify-center min-h-[30px] sm:min-h-0">
+      {/* Middle: Battle info area - minimal on mobile */}
+      <div className="flex-0 flex items-center justify-center min-h-[20px] sm:min-h-0 sm:flex-1">
         <div className="text-center">
           {state.isEnemyTurn && (
             <div className="animate-pulse">
@@ -116,7 +116,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       {/* Bottom: Player area */}
       <div className="flex-0 pb-1 sm:pb-2">
         {/* Player info row */}
-        <div className="flex items-center gap-2 sm:gap-4 px-2 sm:px-4 mb-1 sm:mb-2">
+        <div className="flex items-center gap-1.5 sm:gap-4 px-2 sm:px-4 mb-1 sm:mb-2">
           <div className="flex-1 min-w-0">
             <Player
               player={player}

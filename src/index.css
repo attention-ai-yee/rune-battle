@@ -23,9 +23,9 @@
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
-  /* Responsive font scaling */
+  /* Responsive font scaling - larger base on mobile for readability */
   html {
-    font-size: clamp(12px, 2.5vw, 16px);
+    font-size: clamp(14px, 3.5vw, 16px);
   }
 
   ::-webkit-scrollbar {
@@ -125,8 +125,8 @@
   /* Mobile card size override */
   .card-mobile {
     @media (max-width: 640px) {
-      width: 75px;
-      height: 105px;
+      width: 90px;
+      height: 126px;
     }
   }
 

@@ -37,7 +37,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
     <div
       onClick={isTargetable ? () => onTarget(index) : undefined}
       className={`
-        relative flex flex-col items-center p-2 sm:p-4 rounded-xl
+        relative flex flex-col items-center p-1.5 sm:p-4 rounded-xl
         bg-gradient-to-b from-gray-800/60 to-gray-900/80
         border-2 transition-all duration-300 touch-target
         ${enemy.isHit ? 'animate-enemy-hit border-rune-red' : 'border-gray-700/50'}
@@ -65,7 +65,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
       </div>
 
       {/* Enemy emoji/avatar */}
-      <div className={`text-4xl sm:text-5xl mb-1 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`} style={{ animationDelay: `${index * 0.5}s` }}>
+      <div className={`text-4xl sm:text-5xl mb-0.5 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`} style={{ animationDelay: `${index * 0.5}s` }}>
         {enemy.emoji}
       </div>
 

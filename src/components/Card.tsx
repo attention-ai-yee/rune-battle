@@ -168,7 +168,7 @@ const Card: React.FC<CardProps> = ({
       )}
 
       {/* Card name with upgrade indicator */}
-      <div className={`text-center text-[9px] sm:text-sm font-bold mt-1 sm:mt-2 ${colors.text} drop-shadow-md`}>
+      <div className={`text-center text-[10px] sm:text-sm font-bold mt-1 sm:mt-2 ${colors.text} drop-shadow-md`}>
         {card.name}
         {card.upgraded && <span className="text-amber-400 text-[8px] sm:text-xs ml-0.5">+</span>}
       </div>
@@ -178,21 +178,21 @@ const Card: React.FC<CardProps> = ({
 
       {/* Description */}
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-center text-[7px] sm:text-xs text-gray-300 leading-tight px-0.5 sm:px-1">
+        <p className="text-center text-[8px] sm:text-xs text-gray-300 leading-tight px-0.5 sm:px-1">
           {card.description}
         </p>
       </div>
 
       {/* Exhaust label */}
       {card.exhaust && (
-        <div className="text-center text-[7px] sm:text-[10px] text-red-400 font-bold mt-0.5">
+        <div className="text-center text-[8px] sm:text-[10px] text-red-400 font-bold mt-0.5">
           消耗
         </div>
       )}
 
       {/* Retain label for cards with innate retain */}
       {card.retain && !card.exhaust && (
-        <div className="text-center text-[7px] sm:text-[10px] text-cyan-400 font-bold mt-0.5">
+        <div className="text-center text-[8px] sm:text-[10px] text-cyan-400 font-bold mt-0.5">
           保留
         </div>
       )}

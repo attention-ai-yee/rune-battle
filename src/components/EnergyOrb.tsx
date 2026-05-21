@@ -30,7 +30,7 @@ const EnergyOrb: React.FC<EnergyOrbProps> = ({ current, max }) => {
       {/* Energy number */}
       <div className="relative">
         <div className={`
-          w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-amber-900/60 to-rune-dark border-2 border-rune-gold/50 flex items-center justify-center touch-target
+          w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-amber-900/60 to-rune-dark border-2 border-rune-gold/50 flex items-center justify-center
           ${isOverMax ? 'animate-pulse' : 'animate-glow-gold'}
         `}>
           <span className={`text-lg sm:text-xl font-bold drop-shadow-lg ${
@@ -44,7 +44,7 @@ const EnergyOrb: React.FC<EnergyOrbProps> = ({ current, max }) => {
       </div>
 
       {/* Label */}
-      <span className="text-[8px] sm:text-[10px] text-rune-gold/70 font-bold tracking-wider">能量</span>
+      <span className="text-[9px] sm:text-[10px] text-rune-gold/70 font-bold tracking-wider">能量</span>
 
       {/* Segments */}
       <div className="flex gap-0.5 sm:gap-1">
