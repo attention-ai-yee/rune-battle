@@ -95,6 +95,7 @@ const Card: React.FC<CardProps> = ({
 
   // Long press support for mobile retain toggle
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggered = useRef(false);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     if (showRetainToggle && onToggleRetain) {
@@ -104,8 +105,10 @@ const Card: React.FC<CardProps> = ({
   }, [showRetainToggle, onToggleRetain]);
 
   const handleTouchStart = useCallback(() => {
+    longPressTriggered.current = false;
     if (showRetainToggle && onToggleRetain) {
       longPressTimer.current = setTimeout(() => {
+        longPressTriggered.current = true;
         onToggleRetain();
       }, 300);
     }
@@ -117,6 +120,17 @@ const Card: React.FC<CardProps> = ({
       longPressTimer.current = null;
     }
   }, []);
+
+  const handleClick = useCallback(() => {
+    // If long press was just triggered, ignore the following click
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false;
+      return;
+    }
+    if (canClick) {
+      onClick();
+    }
+  }, [canClick, onClick]);
 
   // Determine border classes: rarity overrides type border for rare/epic
   const borderClass = rarityStyle.border || colors.border;
@@ -132,7 +146,7 @@ const Card: React.FC<CardProps> = ({
 
   return (
     <div
-      onClick={canClick ? onClick : undefined}
+      onClick={handleClick}
       onContextMenu={handleContextMenu}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}

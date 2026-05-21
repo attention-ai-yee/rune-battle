@@ -55,8 +55,8 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
         </div>
       )}
 
-      {/* Intent indicator */}
-      <div className="absolute -top-7 sm:-top-8 left-1/2 -translate-x-1/2 flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-rune-dark/90 border border-gray-700/50 animate-enemy-intent whitespace-nowrap">
+      {/* Intent indicator - normal flow above emoji */}
+      <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-rune-dark/90 border border-gray-700/50 animate-enemy-intent whitespace-nowrap mb-0.5 sm:mb-1">
         <span className="text-[11px] sm:text-xs">{intentInfo.icon}</span>
         <span className={`text-[11px] sm:text-xs font-bold ${intentInfo.color}`}>
           {enemy.intent.type === 'buff' ? `+${enemy.intent.value}` : enemy.intent.value}
