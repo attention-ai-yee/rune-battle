@@ -57,13 +57,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
   return (
     <div
       className={`
-        h-full flex flex-col bg-rune-pattern
+        h-full flex flex-col bg-rune-pattern overflow-hidden
         transition-transform
         ${state.screenShake ? 'animate-shake' : ''}
       `}
     >
       {/* Top: Enemy area */}
-      <div className="flex-0 pt-14 sm:pt-12 px-2 sm:px-4">
+      <div className="flex-0 pt-4 sm:pt-6 px-2 sm:px-4">
         <div className="flex items-center justify-center gap-2 sm:gap-6 flex-wrap">
           {enemies.map((enemy, index) => (
             <Enemy
@@ -84,8 +84,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
         </div>
       </div>
 
-      {/* Middle: Battle info area - breathing space between enemies and hand */}
-      <div className="flex-1 flex items-center justify-center min-h-[60px] sm:min-h-0">
+      {/* Middle: Battle info area - compact */}
+      <div className="flex-0 flex items-center justify-center min-h-[30px] sm:min-h-[40px]">
         <div className="text-center">
           {state.isEnemyTurn && (
             <div className="animate-pulse">
@@ -114,7 +114,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       </div>
 
       {/* Bottom: Player area */}
-      <div className="flex-0 pb-1 sm:pb-2">
+      <div className="flex-1 flex flex-col justify-end pb-16 sm:pb-8 min-h-0">
         {/* Player info row */}
         <div className="flex items-center gap-1.5 sm:gap-4 px-2 sm:px-4 mb-1 sm:mb-2">
           <div className="flex-1 min-w-0">

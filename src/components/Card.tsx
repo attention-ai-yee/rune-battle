@@ -156,8 +156,8 @@ const Card: React.FC<CardProps> = ({
         ${borderClass} ${colors.bg} ${glowClass}
         transition-all duration-200 ease-out
         flex flex-col p-1.5 sm:p-2 cursor-pointer touch-target
-        /* Desktop: 110x155, Mobile: 100x140 */
-        w-[100px] h-[140px] sm:w-[120px] sm:h-[168px]
+        /* Desktop: 120x168, Mobile: 76x106 */
+        w-[76px] h-[106px] sm:w-[120px] sm:h-[168px]
         ${canClick ? 'hover:scale-110 hover:-translate-y-5 hover:z-20 sm:hover:scale-110 sm:hover:-translate-y-5 active:scale-95 active:-translate-y-2 sm:active:scale-95' : 'opacity-60 cursor-not-allowed'}
         ${isSelected ? 'scale-110 -translate-y-5 z-20 ring-2 ring-rune-gold' : ''}
         ${!canClick && !isSelected ? 'opacity-60' : ''}

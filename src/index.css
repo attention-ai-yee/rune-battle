@@ -19,8 +19,9 @@
     touch-action: manipulation;
     /* Prevent tap highlight on mobile */
     -webkit-tap-highlight-color: transparent;
-    /* Safe area insets for notched devices */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* Full height without safe-area padding (game handles its own layout) */
+    margin: 0;
+    padding: 0;
   }
 
   /* Responsive font scaling - larger base on mobile for readability */
