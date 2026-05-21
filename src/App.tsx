@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { GameState } from './types/game';
 import GameBoard from './components/GameBoard';
 import MapScreen from './components/MapScreen';
 import CardUpgradeScreen from './components/CardUpgradeScreen';
 import CardRewardScreen from './components/CardRewardScreen';
 import { useGameState } from './hooks/useGameState';
-import { sfxClick, sfxMapSelect, sfxVictory, sfxCardPlay } from './utils/sounds';
+import { sfxClick, bgmStart, bgmStop, isBgmPlaying } from './utils/sounds';
 
 const App: React.FC = () => {
   const {
@@ -26,6 +26,45 @@ const App: React.FC = () => {
     selectCardReward,
     skipCardReward,
   } = useGameState();
+
+  const [bgmOn, setBgmOn] = useState(false);
+
+  // Start BGM on first user interaction (browser autoplay policy)
+  const ensureBgmStarted = useCallback(() => {
+    if (!bgmOn) {
+      bgmStart();
+      setBgmOn(true);
+    }
+  }, [bgmOn]);
+
+  const toggleBgm = useCallback(() => {
+    if (bgmOn) {
+      bgmStop();
+      setBgmOn(false);
+    } else {
+      bgmStart();
+      setBgmOn(true);
+    }
+  }, [bgmOn]);
+
+  // Mute button (fixed position, visible on all screens except title)
+  const MuteButton = () => (
+    <button
+      onClick={() => { sfxClick(); toggleBgm(); }}
+      className="
+        fixed top-2 right-2 sm:top-3 sm:right-3 z-50
+        touch-target w-10 h-10 sm:w-11 sm:h-11
+        flex items-center justify-center
+        rounded-full bg-gray-800/60 border border-gray-700/50
+        text-lg sm:text-xl
+        hover:bg-gray-700/60 active:bg-gray-600/60
+        transition-all duration-200
+      "
+      title={bgmOn ? '静音' : '开启音乐'}
+    >
+      {bgmOn ? '🔊' : '🔇'}
+    </button>
+  );
 
   // Title Screen
   if (state.screen === 'title') {
@@ -67,7 +106,7 @@ const App: React.FC = () => {
 
           {/* Start button */}
           <button
-            onClick={() => { sfxClick(); startGame(); }}
+            onClick={() => { ensureBgmStarted(); sfxClick(); startGame(); }}
             className="
               touch-target px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl font-bold
               bg-gradient-to-r from-purple-900/50 to-indigo-900/50
@@ -101,6 +140,7 @@ const App: React.FC = () => {
   if (state.screen === 'map') {
     return (
       <div className="h-screen w-screen bg-rune-dark">
+        <MuteButton />
         <MapScreen
           mapLayers={state.mapLayers}
           onSelectNode={selectMapNode}
@@ -113,6 +153,7 @@ const App: React.FC = () => {
   if (state.screen === 'battle' || state.screen === 'battleWin') {
     return (
       <div className="h-screen w-screen bg-rune-dark">
+        <MuteButton />
         <GameBoard
           state={state}
           onCardClick={selectCard}
@@ -132,6 +173,7 @@ const App: React.FC = () => {
     const deckSize = state.drawPile.length + state.hand.length + state.discardPile.length;
     return (
       <div className="h-screen w-screen bg-rune-dark">
+        <MuteButton />
         <CardRewardScreen
           rewardChoices={state.rewardChoices}
           deckSize={deckSize}
@@ -146,6 +188,7 @@ const App: React.FC = () => {
   if (state.screen === 'cardUpgrade') {
     return (
       <div className="h-screen w-screen bg-rune-dark">
+        <MuteButton />
         <CardUpgradeScreen
           upgradeChoices={state.upgradeChoices}
           onSelectCard={selectUpgradeCard}
@@ -159,6 +202,7 @@ const App: React.FC = () => {
   if (state.screen === 'gameOver') {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-rune-pattern animate-fade-in">
+        <MuteButton />
         <div className="text-5xl sm:text-7xl mb-4 sm:mb-6">💀</div>
         <h2 className="text-3xl sm:text-4xl font-bold text-rune-red mb-1 sm:mb-2">战斗失败</h2>
         <p className="text-sm sm:text-base text-gray-400 mb-6 sm:mb-8">冒险者倒下了...</p>
@@ -197,6 +241,7 @@ const App: React.FC = () => {
   if (state.screen === 'victory') {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-rune-pattern animate-fade-in">
+        <MuteButton />
         {/* Victory particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {Array.from({ length: 30 }).map((_, i) => (
