@@ -236,15 +236,16 @@ describe('📌 Retain - Card Data', () => {
     expect(template!.rarity).toBe('rare');
   });
 
-  it('focus and bastion are the only cards with retain=true', () => {
+  it('retain cards are focus, bastion, and ward', () => {
     const retainCards = CARD_TEMPLATES.filter(t => t.retain === true);
-    expect(retainCards.length).toBe(2);
-    expect(retainCards.map(c => c.id).sort()).toEqual(['bastion', 'focus']);
+    expect(retainCards.length).toBe(3);
+    expect(retainCards.map(c => c.id).sort()).toEqual(['bastion', 'focus', 'ward']);
   });
 
-  it('focus and bastion have CARD_UPGRADES entries', () => {
+  it('focus, bastion, and ward have CARD_UPGRADES entries', () => {
     expect(CARD_UPGRADES['focus']).toBeDefined();
     expect(CARD_UPGRADES['bastion']).toBeDefined();
+    expect(CARD_UPGRADES['ward']).toBeDefined();
     expect(CARD_UPGRADES['focus'].name).toBe('蓄势+');
     expect(CARD_UPGRADES['bastion'].name).toBe('筑城+');
   });

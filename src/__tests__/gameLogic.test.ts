@@ -1276,7 +1276,9 @@ describe('Card data integrity', () => {
       expect(template.effect.type).toBeTruthy();
 
       if (template.effect.type === 'attack' || template.effect.type === 'multiAttack' || template.effect.type === 'attackAll') {
-        expect(template.effect.damage).toBeGreaterThan(0);
+        // shield_bash uses armorAsDamage with damage: 0 base
+        const hasDamage = (template.effect.damage ?? 0) > 0 || template.effect.armorAsDamage;
+        expect(hasDamage).toBe(true);
       }
       if (template.effect.type === 'defend') {
         const hasArmorOrDouble = (template.effect.armor ?? 0) > 0 || template.effect.doubleArmor;

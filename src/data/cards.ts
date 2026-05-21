@@ -358,6 +358,90 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     effect: { type: 'selfDamage', hpCost: 3, energyGain: 2 },
     rarity: 'epic',
   },
+
+  // === 8 New Cards: Deepen Existing Systems ===
+
+  // -- Attack System: conditional & scaling --
+  {
+    id: 'crippling_blow',
+    name: '残废打击',
+    type: 'attack',
+    cost: 2,
+    description: '造成8点伤害，敌人失去3点力量',
+    effect: { type: 'attack', damage: 8, weakenAmount: 3 },
+    rarity: 'rare',
+  },
+  {
+    id: 'ricochet',
+    name: '弹射',
+    type: 'attack',
+    cost: 1,
+    description: '造成5点伤害×2次（自动切换目标）',
+    effect: { type: 'multiHit', damage: 5, hits: 2 },
+    rarity: 'rare',
+  },
+  {
+    id: 'inferno',
+    name: '炼狱',
+    type: 'attack',
+    cost: 3,
+    description: '对所有敌人造成10点伤害，灼烧2回合',
+    effect: { type: 'aoeAttack', damage: 10, burnDuration: 2 },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // -- Defense System: armor manipulation & utility --
+  {
+    id: 'shield_bash',
+    name: '盾击',
+    type: 'attack',
+    cost: 1,
+    description: '造成等同于护甲值的伤害',
+    effect: { type: 'attack', damage: 0, armorAsDamage: true },
+    rarity: 'rare',
+  },
+  {
+    id: 'ice_armor',
+    name: '冰甲',
+    type: 'defense',
+    cost: 2,
+    description: '获得12点护甲，冰冻所有敌人1回合',
+    effect: { type: 'defend', armor: 12, freezeDuration: 1 },
+    rarity: 'epic',
+  },
+
+  // -- Spell System: resource & combo --
+  {
+    id: 'dark_ritual',
+    name: '暗夜仪式',
+    type: 'spell',
+    cost: 1,
+    description: '获得1点能量，抽1张牌',
+    effect: { type: 'energyGain', energyGain: 1, hpCost: 0, drawCards: 1 },
+    rarity: 'common',
+  },
+  {
+    id: 'life_tap',
+    name: '生命汲取',
+    type: 'spell',
+    cost: 0,
+    description: '失去4点生命，抽2张牌',
+    effect: { type: 'selfDamage', hpCost: 4, strengthGain: 0, drawCount: 2 },
+    rarity: 'rare',
+  },
+
+  // -- Retain System: strategic hold --
+  {
+    id: 'ward',
+    name: '守护',
+    type: 'defense',
+    cost: 1,
+    description: '保留。获得2点护甲，抽1张牌',
+    effect: { type: 'defend', armor: 2, drawCards: 1 },
+    rarity: 'rare',
+    retain: true,
+  },
 ];
 
 /** Card upgrade definitions: maps templateId to upgraded card properties */
@@ -400,6 +484,15 @@ export const CARD_UPGRADES: Record<string, { name: string; description: string; 
   shiv: { name: '飞刀+', description: '造成3点伤害×2次', effect: { damage: 3 } },
   echo: { name: '回响+', description: '复制上一张打出的卡牌效果', effect: {}, cost: 0 },
   blood_pact_new: { name: '血祭+', description: '失去1点生命，获得2点能量', effect: { hpCost: 1 } },
+  // === 8 New Card Upgrades ===
+  crippling_blow: { name: '残废打击+', description: '造成11点伤害，敌人失去4点力量', effect: { damage: 11, weakenAmount: 4 } },
+  ricochet: { name: '弹射+', description: '造成7点伤害×2次（自动切换目标）', effect: { damage: 7 } },
+  inferno: { name: '炼狱+', description: '对所有敌人造成14点伤害，灼烧3回合', effect: { damage: 14, burnDuration: 3 } },
+  shield_bash: { name: '盾击+', description: '造成等同于护甲值+3的伤害', effect: { damage: 3, armorAsDamage: true } },
+  ice_armor: { name: '冰甲+', description: '获得16点护甲，冰冻所有敌人1回合', effect: { armor: 16 } },
+  dark_ritual: { name: '暗夜仪式+', description: '获得2点能量，抽1张牌', effect: { energyGain: 2, hpCost: 0 } },
+  life_tap: { name: '生命汲取+', description: '失去2点生命，抽2张牌', effect: { hpCost: 2 } },
+  ward: { name: '守护+', description: '保留。获得4点护甲，抽1张牌', effect: { armor: 4 } },
 };
 
 /** Starting deck composition: templateId → count */

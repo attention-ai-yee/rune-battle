@@ -352,9 +352,11 @@ export function applyCardEffect(
       const enemy = { ...newState.enemies[targetEnemyIndex] };
       const burnStacks = getBurnStacks(enemy.statusEffects);
 
-      // Calculate damage: either fixed or hand-scaled
+      // Calculate damage: armor-as-damage, hand-scaled, or fixed
       let totalDamage: number;
-      if (effect.handScaleMultiplier) {
+      if (effect.armorAsDamage) {
+        totalDamage = state.player.armor + (effect.damage ?? 0) + playerStrength;
+      } else if (effect.handScaleMultiplier) {
         totalDamage = state.hand.length * effect.handScaleMultiplier + playerStrength;
       } else {
         totalDamage = (effect.damage ?? 0) + playerStrength;
@@ -379,6 +381,10 @@ export function applyCardEffect(
           enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'freeze', value: effect.freezeDuration });
           enemy.isFrozen = true;
         }
+      }
+      // Apply weaken from attack cards (e.g. crippling_blow)
+      if (effect.weakenAmount) {
+        enemy.strength = Math.max(0, enemy.strength - effect.weakenAmount);
       }
 
       newState.enemies = [...newState.enemies];
@@ -454,6 +460,21 @@ export function applyCardEffect(
         ...newState.player,
         armor: newState.player.armor + armorGain,
       };
+      // Apply freeze to all enemies (e.g. ice_armor)
+      if (effect.freezeDuration) {
+        let enemies = [...newState.enemies];
+        for (let i = 0; i < enemies.length; i++) {
+          const template = getEnemyTemplate(enemies[i].templateId);
+          if (!template?.immuneToFreeze) {
+            enemies[i] = {
+              ...enemies[i],
+              statusEffects: addStatusEffect(enemies[i].statusEffects, { type: 'freeze', value: effect.freezeDuration }),
+              isFrozen: true,
+            };
+          }
+        }
+        newState.enemies = enemies;
+      }
       break;
     }
 
@@ -553,6 +574,7 @@ export function applyCardEffect(
         newState.playerStrength = (newState.playerStrength ?? 0) + strengthGain;
       }
       newState.player = player;
+      // drawCount handled in playCardOnState via drawCount field
       break;
     }
 
@@ -654,6 +676,7 @@ export function applyCardEffect(
         energy: newState.player.energy + energyGain,
         hp: Math.max(1, newState.player.hp - hpCost), // 不会自杀，最低留1HP
       };
+      // drawCards handled in playCardOnState via drawCards field
       break;
     }
 

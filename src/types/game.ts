@@ -28,6 +28,8 @@ export interface CardEffect {
   thornsValue?: number;
   /** Multiply damage by hand count (for mind_blast card effect) */
   handScaleMultiplier?: number;
+  /** Use player armor as damage (for shield_bash card effect) */
+  armorAsDamage?: boolean;
 }
 
 /** Card template - defines a card blueprint */
