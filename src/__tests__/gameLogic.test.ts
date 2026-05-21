@@ -66,7 +66,7 @@ function makeEnemy(overrides: Partial<EnemyInstance> = {}): EnemyInstance {
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
     screen: 'battle',
-    player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+    player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
     enemies: [makeEnemy()],
     drawPile: [],
     hand: [],
@@ -82,6 +82,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     currentBattleNode: 0,
     playerStrength: 0,
     upgradeChoices: [],
+    rewardChoices: [],
+    lastPlayedCard: null,
     ...overrides,
   };
 }
@@ -589,7 +591,7 @@ describe('processEnemyActions', () => {
     const enemy = makeEnemy({
       intent: { type: 'attack', value: 8, description: '骨刺' },
     });
-    const state = makeState({ player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 }, enemies: [enemy] });
+    const state = makeState({ player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 }, enemies: [enemy] });
     const result = processEnemyActions(state);
     expect(result.player.hp).toBe(42);
   });
@@ -599,7 +601,7 @@ describe('processEnemyActions', () => {
       intent: { type: 'attack', value: 10, description: '猛击' },
     });
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 4, statusEffects: [], potions: 0 },
+      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 4, statusEffects: [], potions: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);
@@ -612,7 +614,7 @@ describe('processEnemyActions', () => {
       intent: { type: 'attack', value: 100, description: '致命一击' },
     });
     const state = makeState({
-      player: { hp: 30, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+      player: { hp: 30, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);
@@ -671,7 +673,7 @@ describe('processEnemyActions', () => {
       intent: { type: 'attack', value: 8, description: '挥砍' },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);
@@ -697,7 +699,7 @@ describe('processEnemyActions', () => {
       moves: [{ type: 'attack', value: 4, description: '毒镖', statusEffect: { type: 'poison', value: 2 } }],
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);
@@ -734,7 +736,7 @@ describe('processEnemyActions', () => {
       makeEnemy({ instanceId: 'e2', intent: { type: 'attack', value: 8, description: '骨刺' } }),
     ];
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
       enemies,
     });
     const result = processEnemyActions(state);
@@ -747,7 +749,7 @@ describe('processEnemyActions', () => {
 describe('startNewPlayerTurn', () => {
   it('should clear player armor', () => {
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 0, maxEnergy: 3, armor: 10, statusEffects: [], potions: 0 },
+      player: { hp: 50, maxHp: 70, energy: 0, maxEnergy: 3, armor: 10, statusEffects: [], potions: 0, thorns: 0 },
     });
     const result = startNewPlayerTurn(state);
     expect(result.player.armor).toBe(0);
@@ -755,7 +757,7 @@ describe('startNewPlayerTurn', () => {
 
   it('should restore energy to max', () => {
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 0, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+      player: { hp: 50, maxHp: 70, energy: 0, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
     });
     const result = startNewPlayerTurn(state);
     expect(result.player.energy).toBe(3);
@@ -786,7 +788,7 @@ describe('startNewPlayerTurn', () => {
 
   it('should process player poison at start of turn', () => {
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 3 }], potions: 0 },
+      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 3 }], potions: 0, thorns: 0 },
     });
     const result = startNewPlayerTurn(state);
     expect(result.player.hp).toBe(47); // 50 - 3 = 47
@@ -837,13 +839,13 @@ describe('drawCards', () => {
 describe('canPlayCard', () => {
   it('should allow playing a card with sufficient energy', () => {
     const card = makeCard({ cost: 1 });
-    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 } });
+    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 } });
     expect(canPlayCard(card, state)).toBe(true);
   });
 
   it('should not allow playing a card with insufficient energy', () => {
     const card = makeCard({ cost: 2 });
-    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 } });
+    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 } });
     expect(canPlayCard(card, state)).toBe(false);
   });
 
@@ -879,7 +881,7 @@ describe('canPlayCard', () => {
 
   it('should allow playing card with exactly enough energy', () => {
     const card = makeCard({ cost: 3 });
-    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 } });
+    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 } });
     expect(canPlayCard(card, state)).toBe(true);
   });
 });
@@ -1110,7 +1112,7 @@ describe('Armor clearing timing (integration)', () => {
       intent: { type: 'attack', value: 8, description: '猛击' },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 5, statusEffects: [], potions: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 5, statusEffects: [], potions: 0, thorns: 0 },
       enemies: [enemy],
     });
 
@@ -1157,7 +1159,7 @@ describe('Full turn cycle (integration)', () => {
       hand: [strikeCard], // Ensure strike is in hand
       discardPile: [],
       enemies: [enemy],
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
     });
 
     // Player plays a strike card (6 damage, 1 cost)
@@ -1243,7 +1245,7 @@ describe('Status effect integration', () => {
       intent: { type: 'attack', value: 8, description: '挥砍' },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
       enemies: [enemy],
     });
 

@@ -22,7 +22,7 @@ const MapScreen: React.FC<MapScreenProps> = ({ mapLayers, onSelectNode }) => {
       <p className="text-xs sm:text-sm text-gray-400 mb-4 sm:mb-6">选择一个敌人开始战斗</p>
 
       {/* Layers */}
-      <div className="flex flex-col gap-3 sm:gap-6 w-full max-w-lg">
+      <div className="flex flex-col gap-2 sm:gap-6 w-full max-w-lg">
         {mapLayers.map((layer, layerIndex) => {
           const allDefeated = layer.nodes.every(n => n.defeated);
           const isLocked = !layer.unlocked;
@@ -31,7 +31,7 @@ const MapScreen: React.FC<MapScreenProps> = ({ mapLayers, onSelectNode }) => {
             <div
               key={layerIndex}
               className={`
-                rounded-xl border-2 p-3 sm:p-5
+                rounded-xl border-2 p-2 sm:p-5
                 bg-gradient-to-r ${layerColors[layerIndex] || layerColors[0]}
                 transition-all duration-300
                 ${isLocked
@@ -73,7 +73,7 @@ const MapScreen: React.FC<MapScreenProps> = ({ mapLayers, onSelectNode }) => {
                       onClick={canClick ? () => onSelectNode(layerIndex, nodeIndex) : undefined}
                       disabled={!canClick}
                       className={`
-                        flex flex-col items-center gap-0.5 sm:gap-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg
+                        flex flex-col items-center gap-0.5 sm:gap-1 px-4 sm:px-4 py-2 sm:py-3 rounded-lg
                         border-2 transition-all duration-200 touch-target scroll-snap-center flex-shrink-0
                         ${node.defeated
                           ? 'bg-gray-800/40 border-rune-green/30 opacity-50 cursor-default'
@@ -83,7 +83,7 @@ const MapScreen: React.FC<MapScreenProps> = ({ mapLayers, onSelectNode }) => {
                         }
                       `}
                     >
-                      <span className="text-xl sm:text-2xl">{template.emoji}</span>
+                      <span className="text-2xl sm:text-2xl">{template.emoji}</span>
                       <span className={`text-[9px] sm:text-xs font-bold ${node.defeated ? 'text-gray-600 line-through' : 'text-gray-300'}`}>
                         {template.name}
                       </span>

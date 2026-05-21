@@ -65,7 +65,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
       </div>
 
       {/* Enemy emoji/avatar */}
-      <div className={`text-3xl sm:text-5xl mb-1 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`} style={{ animationDelay: `${index * 0.5}s` }}>
+      <div className={`text-4xl sm:text-5xl mb-1 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`} style={{ animationDelay: `${index * 0.5}s` }}>
         {enemy.emoji}
       </div>
 

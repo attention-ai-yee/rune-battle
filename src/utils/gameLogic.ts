@@ -298,6 +298,44 @@ export function getRandomUpgradeChoices(deck: CardInstance[], count: number = 3)
   return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
+/** Rarity weights for card reward selection */
+const REWARD_RARITY_WEIGHTS: Record<string, number> = {
+  common: 60,
+  rare: 30,
+  epic: 10,
+};
+
+/** Select random card templates as battle rewards, weighted by rarity.
+ *  Returns `count` unique CardTemplate objects.
+ */
+export function getRandomCardRewardTemplates(count: number = 3): CardTemplate[] {
+  const pool = CARD_TEMPLATES.map(t => ({
+    template: t,
+    weight: REWARD_RARITY_WEIGHTS[t.rarity] ?? REWARD_RARITY_WEIGHTS.common,
+  }));
+  const results: CardTemplate[] = [];
+  const available = [...pool];
+
+  for (let i = 0; i < count && available.length > 0; i++) {
+    const totalWeight = available.reduce((sum, item) => sum + item.weight, 0);
+    let roll = Math.random() * totalWeight;
+    let chosenIndex = 0;
+
+    for (let j = 0; j < available.length; j++) {
+      roll -= available[j].weight;
+      if (roll <= 0) {
+        chosenIndex = j;
+        break;
+      }
+    }
+
+    results.push(available[chosenIndex].template);
+    available.splice(chosenIndex, 1);
+  }
+
+  return results;
+}
+
 /** Apply a card's effect to the game state */
 export function applyCardEffect(
   card: CardInstance,
@@ -313,7 +351,15 @@ export function applyCardEffect(
       if (targetEnemyIndex === undefined) break;
       const enemy = { ...newState.enemies[targetEnemyIndex] };
       const burnStacks = getBurnStacks(enemy.statusEffects);
-      const totalDamage = (effect.damage ?? 0) + playerStrength;
+
+      // Calculate damage: either fixed or hand-scaled
+      let totalDamage: number;
+      if (effect.handScaleMultiplier) {
+        totalDamage = state.hand.length * effect.handScaleMultiplier + playerStrength;
+      } else {
+        totalDamage = (effect.damage ?? 0) + playerStrength;
+      }
+
       const result = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks);
       enemy.hp = Math.max(0, result.newHp);
       enemy.armor = result.newArmor;
@@ -456,6 +502,150 @@ export function applyCardEffect(
       break;
     }
 
+    case 'aoeAttack': {
+      const damage = (effect.damage ?? 0) + playerStrength;
+      let enemies = [...newState.enemies];
+
+      for (let i = 0; i < enemies.length; i++) {
+        let enemy = { ...enemies[i] };
+        const burnStacks = getBurnStacks(enemy.statusEffects);
+        const result = applyDamageToTarget(damage, enemy.hp, enemy.armor, burnStacks);
+        enemy.hp = Math.max(0, result.newHp);
+        enemy.armor = result.newArmor;
+        enemy.isHit = true;
+
+        // Apply status effects from card
+        if (effect.poison) {
+          enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'poison', value: effect.poison });
+        }
+        if (effect.burnDuration) {
+          enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+        }
+        if (effect.freezeDuration) {
+          const template = getEnemyTemplate(enemies[i].templateId);
+          if (!template?.immuneToFreeze) {
+            enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'freeze', value: effect.freezeDuration });
+            enemy.isFrozen = true;
+          }
+        }
+
+        enemies[i] = enemy;
+      }
+
+      // Remove dead enemies
+      newState.enemies = enemies.filter(e => e.hp > 0);
+      break;
+    }
+
+    case 'selfDamage': {
+      const hpCost = effect.hpCost ?? 0;
+      const energyGain = effect.energyGain ?? 0;
+      const strengthGain = effect.strengthGain ?? 0;
+
+      let player = { ...newState.player };
+      if (hpCost > 0) {
+        player.hp = Math.max(1, player.hp - hpCost);
+      }
+      if (energyGain > 0) {
+        player.energy = player.energy + energyGain;
+      }
+      if (strengthGain > 0) {
+        newState.playerStrength = (newState.playerStrength ?? 0) + strengthGain;
+      }
+      newState.player = player;
+      break;
+    }
+
+    case 'multiHit': {
+      if (targetEnemyIndex === undefined) break;
+      const hits = effect.hits ?? 1;
+      const damagePerHit = (effect.damage ?? 0) + playerStrength;
+      let enemies = [...newState.enemies];
+      let targetIdx = targetEnemyIndex;
+
+      for (let h = 0; h < hits; h++) {
+        if (targetIdx >= enemies.length) {
+          if (enemies.length > 0) {
+            targetIdx = 0;
+          } else {
+            break;
+          }
+        }
+
+        let enemy = { ...enemies[targetIdx] };
+        const burnStacks = getBurnStacks(enemy.statusEffects);
+        const result = applyDamageToTarget(damagePerHit, enemy.hp, enemy.armor, burnStacks);
+        enemy.hp = Math.max(0, result.newHp);
+        enemy.armor = result.newArmor;
+        enemy.isHit = true;
+
+        // Apply status effects from card on first hit only
+        if (h === 0) {
+          if (effect.poison) {
+            enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'poison', value: effect.poison });
+          }
+          if (effect.burnDuration) {
+            enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+          }
+          if (effect.freezeDuration) {
+            const template = getEnemyTemplate(enemies[targetIdx].templateId);
+            if (!template?.immuneToFreeze) {
+              enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'freeze', value: effect.freezeDuration });
+              enemy.isFrozen = true;
+            }
+          }
+        }
+
+        enemies[targetIdx] = enemy;
+
+        if (enemy.hp <= 0) {
+          enemies = enemies.filter((_, idx) => idx !== targetIdx);
+          if (targetIdx >= enemies.length && enemies.length > 0) {
+            targetIdx = 0;
+          }
+        }
+      }
+      newState.enemies = enemies;
+      break;
+    }
+
+    case 'handCountDamage': {
+      if (targetEnemyIndex === undefined) break;
+      const enemy = { ...newState.enemies[targetEnemyIndex] };
+      const burnStacks = getBurnStacks(enemy.statusEffects);
+      const totalDamage = state.hand.length * (effect.handScaleMultiplier ?? 3) + playerStrength;
+      const result = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks);
+      enemy.hp = Math.max(0, result.newHp);
+      enemy.armor = result.newArmor;
+      enemy.isHit = true;
+
+      // Apply status effects from card
+      if (effect.poison) {
+        enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'poison', value: effect.poison });
+      }
+      if (effect.burnDuration) {
+        enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+      }
+      if (effect.freezeDuration) {
+        const template = getEnemyTemplate(newState.enemies[targetEnemyIndex].templateId);
+        if (!template?.immuneToFreeze) {
+          enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'freeze', value: effect.freezeDuration });
+          enemy.isFrozen = true;
+        }
+      }
+
+      newState.enemies = [...newState.enemies];
+      newState.enemies[targetEnemyIndex] = enemy;
+
+      // Check if enemy is dead
+      if (enemy.hp <= 0) {
+        newState.enemies = newState.enemies.filter(
+          (_, idx) => idx !== targetEnemyIndex
+        );
+      }
+      break;
+    }
+
     case 'energyGain': {
       const energyGain = effect.energyGain ?? 0;
       const hpCost = effect.hpCost ?? 0;
@@ -468,7 +658,15 @@ export function applyCardEffect(
     }
 
     case 'strength': {
-      newState.playerStrength = (newState.playerStrength ?? 0) + (effect.strengthGain ?? 0);
+      const strengthGain = effect.strengthGain ?? 0;
+      const hpCost = effect.hpCost ?? 0;
+      newState.playerStrength = (newState.playerStrength ?? 0) + strengthGain;
+      if (hpCost > 0) {
+        newState.player = {
+          ...newState.player,
+          hp: Math.max(1, newState.player.hp - hpCost),
+        };
+      }
       break;
     }
 
@@ -507,6 +705,31 @@ export function applyCardEffect(
         ...e,
         strength: Math.max(0, e.strength - (effect.weakenAmount ?? 0)),
       }));
+      break;
+    }
+
+    case 'thorns': {
+      // Apply thorns status to player
+      newState.player = {
+        ...newState.player,
+        thorns: (newState.player.thorns ?? 0) + (effect.thornsValue ?? 0),
+      };
+      break;
+    }
+
+    case 'echo': {
+      // Copy the last played card's effect
+      const lastCard = state.lastPlayedCard;
+      if (lastCard) {
+        // Apply the last played card's effect as if this card had that effect
+        const echoCard: CardInstance = {
+          ...card,
+          effect: { ...lastCard.effect },
+        };
+        // Recursively apply the copied effect
+        return applyCardEffect(echoCard, newState, targetEnemyIndex);
+      }
+      // No last played card - do nothing
       break;
     }
 
@@ -558,11 +781,21 @@ export function processEnemyActions(state: GameState): GameState {
     const intent = enemy.intent;
 
     if (intent.type === 'attack') {
-      const totalDamage = intent.value;
+      let totalDamage = intent.value;
+
       const result = applyDamageToTarget(totalDamage, player.hp, player.armor);
       player.hp = Math.max(0, result.newHp);
       player.armor = result.newArmor;
       shouldShake = true;
+
+      // Thorns: reflect damage to attacking enemy
+      if (player.thorns > 0) {
+        const thornsDamage = player.thorns;
+        const thornsResult = applyDamageToTarget(thornsDamage, enemy.hp, enemy.armor, 0);
+        enemy.hp = Math.max(0, thornsResult.newHp);
+        enemy.armor = thornsResult.newArmor;
+        enemy.isHit = true;
+      }
 
       // Check if the move that generated this intent has a status effect
       const matchingMove = enemy.moves.find(m => m.description === intent.description && m.type === 'attack');
@@ -640,18 +873,22 @@ export function startNewPlayerTurn(state: GameState): GameState {
   // Process player status effects at the start of their turn
   const { entity: processedPlayer } = processStatusEffects(state.player);
 
-  // Clear player armor from last turn
-  const player: PlayerState = {
+  // Clear player armor and thorns from last turn
+  let player: PlayerState = {
     ...processedPlayer,
     armor: 0,
     energy: state.player.maxEnergy,
+    thorns: 0,
   };
+
+  let enemies = [...state.enemies];
 
   // Check if player died from status effects (e.g. poison)
   if (player.hp <= 0) {
     return {
       ...state,
       player,
+      enemies,
       screen: 'gameOver',
       isEnemyTurn: false,
       selectedCardId: null,
@@ -663,9 +900,9 @@ export function startNewPlayerTurn(state: GameState): GameState {
   // Restore retained cards from the retainedCards field
   const retainedHand = state.retainedCards.map(c => ({ ...c, isRetained: false }));
   const handLimit = getHandLimit(retainedHand.length);
-  const cardsToDraw = handLimit - retainedHand.length;
 
   // Draw cards, filling hand up to handLimit
+  const cardsToDraw = handLimit - retainedHand.length;
   const { hand, drawPile, discardPile } = drawCards(
     retainedHand,
     state.drawPile,
@@ -676,6 +913,7 @@ export function startNewPlayerTurn(state: GameState): GameState {
   return {
     ...state,
     player,
+    enemies,
     hand,
     drawPile,
     discardPile,
@@ -684,6 +922,7 @@ export function startNewPlayerTurn(state: GameState): GameState {
     selectedCardId: null,
     animatingCardIds: [],
     turnNumber: state.turnNumber + 1,
+    lastPlayedCard: null,
   };
 }
 
@@ -699,6 +938,7 @@ export function createInitialState(): GameState {
       armor: 0,
       statusEffects: [],
       potions: 0,
+      thorns: 0,
     },
     enemies: [],
     drawPile: [],
@@ -715,6 +955,8 @@ export function createInitialState(): GameState {
     currentBattleNode: -1,
     playerStrength: 0,
     upgradeChoices: [],
+    rewardChoices: [],
+    lastPlayedCard: null,
   };
 }
 
@@ -726,13 +968,13 @@ export function canPlayCard(card: CardInstance, state: GameState): boolean {
 
   // Attack cards need at least one enemy
   if (
-    (card.effect.type === 'attack' || card.effect.type === 'multiAttack' || card.effect.type === 'drain') &&
+    (card.effect.type === 'attack' || card.effect.type === 'multiAttack' || card.effect.type === 'drain' || card.effect.type === 'multiHit' || card.effect.type === 'handCountDamage') &&
     state.enemies.length === 0
   ) {
     return false;
   }
 
-  if (card.effect.type === 'attackAll' && state.enemies.length === 0) {
+  if ((card.effect.type === 'attackAll' || card.effect.type === 'aoeAttack') && state.enemies.length === 0) {
     return false;
   }
 
@@ -749,14 +991,32 @@ export function canPlayCard(card: CardInstance, state: GameState): boolean {
     return false;
   }
 
+  // Echo card: needs to have a last played card; if last card was an attack type, needs enemies
+  if (card.effect.type === 'echo') {
+    if (!state.lastPlayedCard) return false;
+    const lastEffect = state.lastPlayedCard.effect;
+    if (
+      (lastEffect.type === 'attack' || lastEffect.type === 'multiAttack' || lastEffect.type === 'drain' || lastEffect.type === 'attackAll' || lastEffect.type === 'aoeAttack' || lastEffect.type === 'multiHit' || lastEffect.type === 'handCountDamage') &&
+      state.enemies.length === 0
+    ) {
+      return false;
+    }
+  }
+
   return true;
 }
 
 /** Check if a card needs a target */
 export function cardNeedsTarget(card: CardInstance): boolean {
+  // Echo card needs target if the last played card needed one
+  if (card.effect.type === 'echo') {
+    // Conservative: always require target selection for echo
+    // since we can't know at deck-building time what the last card was
+    return true;
+  }
   return card.effect.type === 'attack' || card.effect.type === 'multiAttack' ||
     card.effect.type === 'poison' || card.effect.type === 'burn' || card.effect.type === 'freeze' ||
-    card.effect.type === 'drain';
+    card.effect.type === 'drain' || card.effect.type === 'multiHit' || card.effect.type === 'handCountDamage';
 }
 
 /** Check if all enemies in a layer are defeated */

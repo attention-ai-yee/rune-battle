@@ -63,29 +63,29 @@ const GameBoard: React.FC<GameBoardProps> = ({
       `}
     >
       {/* Top: Enemy area */}
-      <div className="flex-0 pt-2 sm:pt-4 px-2 sm:px-4">
+      <div className="flex-0 pt-1 sm:pt-4 px-2 sm:px-4">
         <div className="flex items-center justify-center gap-2 sm:gap-6 flex-wrap">
           {enemies.map((enemy, index) => (
             <Enemy
               key={enemy.instanceId}
               enemy={enemy}
               index={index}
-              isTargetable={hasSelectedCard && (selectedCard?.effect.type === 'attack' || selectedCard?.effect.type === 'multiAttack' || selectedCard?.effect.type === 'drain')}
+              isTargetable={hasSelectedCard && (selectedCard?.effect.type === 'attack' || selectedCard?.effect.type === 'multiAttack' || selectedCard?.effect.type === 'drain' || selectedCard?.effect.type === 'multiHit' || selectedCard?.effect.type === 'handCountDamage')}
               isSelected={false}
               onTarget={onEnemyTarget}
             />
           ))}
 
           {enemies.length === 0 && (
-            <div className="text-gray-600 text-xs sm:text-sm italic py-4 sm:py-8">
+            <div className="text-gray-600 text-xs sm:text-sm italic py-2 sm:py-8">
               没有敌人
             </div>
           )}
         </div>
       </div>
 
-      {/* Middle: Battle info area */}
-      <div className="flex-1 flex items-center justify-center min-h-[40px] sm:min-h-0">
+      {/* Middle: Battle info area - compact on mobile */}
+      <div className="flex-1 flex items-center justify-center min-h-[30px] sm:min-h-0">
         <div className="text-center">
           {state.isEnemyTurn && (
             <div className="animate-pulse">
@@ -106,7 +106,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             </div>
           )}
           {!state.isEnemyTurn && !hasSelectedCard && (
-            <span className="text-gray-600 text-xs sm:text-sm">
+            <span className="text-gray-600 text-[10px] sm:text-sm">
               回合 {state.turnNumber} · 打出手中的卡牌
             </span>
           )}
@@ -141,18 +141,18 @@ const GameBoard: React.FC<GameBoardProps> = ({
             `}
             title={hasPotion ? '使用药水：恢复2点能量' : '无药水'}
           >
-            <span className={`text-lg sm:text-2xl ${hasPotion ? '' : 'grayscale'}`}>🧪</span>
-            <span className={`text-[8px] sm:text-[10px] font-bold ${hasPotion ? 'text-emerald-400' : 'text-gray-600'}`}>
+            <span className={`text-xl sm:text-2xl ${hasPotion ? '' : 'grayscale'}`}>🧪</span>
+            <span className={`text-[9px] sm:text-[10px] font-bold ${hasPotion ? 'text-emerald-400' : 'text-gray-600'}`}>
               药水×{player.potions}
             </span>
           </button>
 
-          {/* End Turn button - prominent on mobile */}
+          {/* End Turn button - larger on mobile */}
           {!state.isEnemyTurn && (
             <button
               onClick={onEndTurn}
               className="
-                touch-target px-3 sm:px-5 py-2 sm:py-3 rounded-lg font-bold text-xs sm:text-sm
+                touch-target px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-sm
                 bg-gradient-to-r from-amber-900/40 to-amber-800/30
                 border-2 border-rune-gold/50 text-rune-gold
                 hover:from-amber-900/60 hover:to-amber-800/50
@@ -176,7 +176,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
         {/* Retain hint */}
         {!state.isEnemyTurn && hand.length > 0 && (
-          <div className="text-center text-[9px] sm:text-[11px] text-cyan-400/60 mb-0.5 sm:mb-1">
+          <div className="text-center text-[8px] sm:text-[11px] text-cyan-400/60 mb-0.5 sm:mb-1">
             长按保留卡牌 📌
           </div>
         )}

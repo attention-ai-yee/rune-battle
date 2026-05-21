@@ -30,10 +30,10 @@ const EnergyOrb: React.FC<EnergyOrbProps> = ({ current, max }) => {
       {/* Energy number */}
       <div className="relative">
         <div className={`
-          w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-amber-900/60 to-rune-dark border-2 border-rune-gold/50 flex items-center justify-center touch-target
+          w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-amber-900/60 to-rune-dark border-2 border-rune-gold/50 flex items-center justify-center touch-target
           ${isOverMax ? 'animate-pulse' : 'animate-glow-gold'}
         `}>
-          <span className={`text-base sm:text-xl font-bold drop-shadow-lg ${
+          <span className={`text-lg sm:text-xl font-bold drop-shadow-lg ${
             isOverMax ? 'text-amber-300 animate-pulse' : 'text-rune-gold'
           }`}>
             {current}

@@ -63,6 +63,11 @@ const Player: React.FC<PlayerProps> = ({ player, deckSize, discardSize, playerSt
               💪 {playerStrength}
             </span>
           )}
+          {player.thorns > 0 && (
+            <span className="text-green-300 font-bold">
+              🌿 {player.thorns}
+            </span>
+          )}
           {/* Player status effects */}
           {poisonStacks > 0 && (
             <span className="text-green-400 font-bold">

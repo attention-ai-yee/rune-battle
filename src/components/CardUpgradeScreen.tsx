@@ -53,7 +53,7 @@ const CardUpgradeScreen: React.FC<CardUpgradeScreenProps> = ({
 
               {/* Upgraded preview */}
               <div className="text-[9px] sm:text-xs text-amber-400 mb-0.5 sm:mb-1">升级后</div>
-              <div className="relative w-[75px] h-[105px] sm:w-[110px] sm:h-[155px] rounded-lg border-2 border-amber-400/60 bg-gradient-to-b from-amber-950/60 to-rune-card animate-glow-epic flex flex-col p-1.5 sm:p-2 transition-all duration-200 group-hover:scale-105 group-hover:border-amber-400 active:scale-95">
+              <div className="relative w-[90px] h-[126px] sm:w-[110px] sm:h-[155px] rounded-lg border-2 border-amber-400/60 bg-gradient-to-b from-amber-950/60 to-rune-card animate-glow-epic flex flex-col p-1.5 sm:p-2 transition-all duration-200 group-hover:scale-105 group-hover:border-amber-400 active:scale-95">
                 {/* Cost badge */}
                 <div className="absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-rune-dark border-2 border-rune-gold flex items-center justify-center z-10">
                   <span className="text-rune-gold text-[10px] sm:text-sm font-bold">

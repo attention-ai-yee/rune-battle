@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { CardInstance, GameState } from '../types/game';
+import type { CardInstance, CardTemplate, GameState } from '../types/game';
 import {
   createStartingDeck,
   createEnemyInstance,
+  createCardInstance,
 } from '../utils/gameLogic';
 import { getEnemyTemplate } from '../data/enemies';
 import {
@@ -19,6 +20,7 @@ import {
   usePotion as usePotionLogic,
   upgradeCard as upgradeCardLogic,
   getRandomUpgradeChoices,
+  getRandomCardRewardTemplates,
   MAX_RETAIN,
 } from '../utils/gameLogic';
 import { MAP_LAYERS } from '../data/enemies';
@@ -110,6 +112,7 @@ export function useGameState() {
           armor: 0,
           statusEffects: [],
           potions: 0,
+          thorns: 0,
         },
         enemies: [],
         drawPile: shuffled,
@@ -126,6 +129,8 @@ export function useGameState() {
         currentBattleNode: -1,
         playerStrength: 0,
         upgradeChoices: [],
+        rewardChoices: [],
+        lastPlayedCard: null,
       };
 
       return initialState;
@@ -149,8 +154,10 @@ export function useGameState() {
       // Create enemy instance
       const enemy = createEnemyInstance(template);
 
-      // Create fresh deck for battle
-      const deck = createStartingDeck();
+      // Create fresh deck for battle (from current drawPile to preserve earned cards)
+      const fullDeck = [...prev.drawPile, ...prev.discardPile, ...prev.hand.filter(c => true)];
+      // If no cards exist (first battle), create starting deck
+      const deck = fullDeck.length > 0 ? shuffle([...fullDeck]) : createStartingDeck();
       const shuffled = shuffle(deck);
 
       // Draw initial hand of 5 cards
@@ -165,6 +172,7 @@ export function useGameState() {
           armor: 0,
           statusEffects: [],
           potions: 1, // 每场战斗1瓶药水
+          thorns: 0,
         },
         enemies: [enemy],
         drawPile,
@@ -180,6 +188,8 @@ export function useGameState() {
         currentBattleNode: nodeIndex,
         playerStrength: 0, // 战斗开始力量重置
         upgradeChoices: [],
+        rewardChoices: [],
+        lastPlayedCard: null,
       };
 
       return battleState;
@@ -285,27 +295,75 @@ export function useGameState() {
     });
   }, []);
 
-  /** Proceed from battleWin to card upgrade screen */
-  const proceedToUpgrade = useCallback(() => {
+  /** Proceed from battleWin to card reward screen */
+  const proceedToCardReward = useCallback(() => {
     setState(prev => {
       if (prev.screen !== 'battleWin') return prev;
 
-      // Collect all cards from draw pile + hand + discard pile as the full deck
-      const fullDeck = [...prev.drawPile, ...prev.hand, ...prev.discardPile];
-      const choices = getRandomUpgradeChoices(fullDeck, 3);
-
-      // If no upgradeable cards, go directly to map
-      if (choices.length === 0) {
-        return returnToMapFromState(prev);
-      }
+      // Roll card rewards (3 cards weighted by rarity)
+      const rewardTemplates = getRandomCardRewardTemplates(3);
 
       return {
         ...prev,
-        screen: 'cardUpgrade',
-        upgradeChoices: choices,
+        screen: 'cardReward',
+        rewardChoices: rewardTemplates,
       };
     });
   }, []);
+
+  /** Select a card from reward choices to add to the deck */
+  const selectCardReward = useCallback((template: CardTemplate) => {
+    setState(prev => {
+      if (prev.screen !== 'cardReward') return prev;
+
+      // Create a new card instance from the template and add to draw pile
+      const newCard = createCardInstance(template);
+      const newDrawPile = [...prev.drawPile, newCard];
+
+      // Proceed directly to card upgrade (no relic step)
+      return proceedToCardUpgrade({
+        ...prev,
+        drawPile: newDrawPile,
+        rewardChoices: [],
+      });
+    });
+  }, []);
+
+  /** Skip card reward */
+  const skipCardReward = useCallback(() => {
+    setState(prev => {
+      if (prev.screen !== 'cardReward') return prev;
+
+      // Proceed directly to card upgrade (no relic step)
+      return proceedToCardUpgrade({
+        ...prev,
+        rewardChoices: [],
+      });
+    });
+  }, []);
+
+  /** Internal helper: proceed to card upgrade screen */
+  function proceedToCardUpgrade(prev: GameState): GameState {
+    // Collect all cards from draw pile + hand + discard pile as the full deck
+    const fullDeck = [...prev.drawPile, ...prev.hand, ...prev.discardPile];
+    const choices = getRandomUpgradeChoices(fullDeck, 3);
+
+    // If no upgradeable cards, go directly to map
+    if (choices.length === 0) {
+      return returnToMapFromState(prev);
+    }
+
+    return {
+      ...prev,
+      screen: 'cardUpgrade',
+      upgradeChoices: choices,
+    };
+  }
+
+  /** Proceed from battleWin to card upgrade screen (legacy - now goes to card reward first) */
+  const proceedToUpgrade = useCallback(() => {
+    proceedToCardReward();
+  }, [proceedToCardReward]);
 
   /** Select a card to upgrade from the upgrade choices */
   const selectUpgradeCard = useCallback((cardInstance: CardInstance) => {
@@ -381,6 +439,7 @@ export function useGameState() {
         energy: prev.player.maxEnergy,
         statusEffects: [],
         potions: 0,
+        thorns: 0,
       },
       enemies: [],
       hand: [],
@@ -395,6 +454,8 @@ export function useGameState() {
       currentBattleNode: -1,
       playerStrength: 0, // 战斗结束重置力量
       upgradeChoices: [],
+      rewardChoices: [],
+      lastPlayedCard: null,
     };
   }
 
@@ -428,6 +489,8 @@ export function useGameState() {
     usePotion: usePotionAction,
     selectUpgradeCard,
     skipUpgrade,
+    selectCardReward,
+    skipCardReward,
   };
 }
 
@@ -490,6 +553,7 @@ function playCardOnState(
       enemies: [],
       selectedCardId: null,
       screen: 'battleWin',
+      lastPlayedCard: card,
     };
   }
 
@@ -501,5 +565,6 @@ function playCardOnState(
     drawPile: finalDrawPile,
     discardPile: finalDiscardPile,
     selectedCardId: null,
+    lastPlayedCard: card,
   };
 }

@@ -3,6 +3,7 @@ import type { GameState } from './types/game';
 import GameBoard from './components/GameBoard';
 import MapScreen from './components/MapScreen';
 import CardUpgradeScreen from './components/CardUpgradeScreen';
+import CardRewardScreen from './components/CardRewardScreen';
 import { useGameState } from './hooks/useGameState';
 
 const App: React.FC = () => {
@@ -21,6 +22,8 @@ const App: React.FC = () => {
     usePotion,
     selectUpgradeCard,
     skipUpgrade,
+    selectCardReward,
+    skipCardReward,
   } = useGameState();
 
   // Title Screen
@@ -118,6 +121,21 @@ const App: React.FC = () => {
           onReturnToMap={returnToMap}
           onUsePotion={usePotion}
           onToggleRetain={toggleRetain}
+        />
+      </div>
+    );
+  }
+
+  // Card Reward Screen
+  if (state.screen === 'cardReward') {
+    const deckSize = state.drawPile.length + state.hand.length + state.discardPile.length;
+    return (
+      <div className="h-screen w-screen bg-rune-dark">
+        <CardRewardScreen
+          rewardChoices={state.rewardChoices}
+          deckSize={deckSize}
+          onSelectCard={selectCardReward}
+          onSkip={skipCardReward}
         />
       </div>
     );

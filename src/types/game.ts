@@ -5,7 +5,7 @@ export type CardType = 'attack' | 'defense' | 'spell';
 export type CardRarity = 'common' | 'rare' | 'epic';
 
 /** Card effect types */
-export type CardEffectType = 'attack' | 'multiAttack' | 'defend' | 'heal' | 'attackAll' | 'poison' | 'burn' | 'freeze' | 'energyGain' | 'strength' | 'drain' | 'draw' | 'weaken';
+export type CardEffectType = 'attack' | 'multiAttack' | 'defend' | 'heal' | 'attackAll' | 'aoeAttack' | 'poison' | 'burn' | 'freeze' | 'energyGain' | 'strength' | 'drain' | 'draw' | 'weaken' | 'thorns' | 'echo' | 'multiHit' | 'selfDamage' | 'handCountDamage';
 
 /** Card effect definition */
 export interface CardEffect {
@@ -24,6 +24,10 @@ export interface CardEffect {
   strengthGain?: number;
   weakenAmount?: number;
   drawCount?: number;
+  /** Thorns value to apply to player (for thorns card effect) */
+  thornsValue?: number;
+  /** Multiply damage by hand count (for mind_blast card effect) */
+  handScaleMultiplier?: number;
 }
 
 /** Card template - defines a card blueprint */
@@ -119,10 +123,12 @@ export interface PlayerState {
   armor: number;
   statusEffects: StatusEffect[];
   potions: number;
+  /** Thorns: reflects damage to enemies when attacked, cleared at start of player turn */
+  thorns: number;
 }
 
 /** Screen types */
-export type ScreenType = 'title' | 'map' | 'battle' | 'battleWin' | 'cardUpgrade' | 'gameOver' | 'victory';
+export type ScreenType = 'title' | 'map' | 'battle' | 'battleWin' | 'cardReward' | 'cardUpgrade' | 'gameOver' | 'victory';
 
 /** Map node - represents an enemy encounter */
 export interface MapNode {
@@ -160,6 +166,10 @@ export interface GameState {
   playerStrength: number;
   /** Cards available for upgrade selection */
   upgradeChoices: CardInstance[];
+  /** Card templates available as reward choices after battle */
+  rewardChoices: CardTemplate[];
+  /** Last card played this turn (for echo card) */
+  lastPlayedCard: CardInstance | null;
 }
 
 /** Floating damage number for visual feedback */
