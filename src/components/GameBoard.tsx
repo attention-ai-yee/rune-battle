@@ -63,7 +63,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       `}
     >
       {/* Top: Enemy area */}
-      <div className="flex-0 pt-8 sm:pt-10 px-2 sm:px-4">
+      <div className="flex-0 pt-14 sm:pt-12 px-2 sm:px-4">
         <div className="flex items-center justify-center gap-2 sm:gap-6 flex-wrap">
           {enemies.map((enemy, index) => (
             <Enemy
