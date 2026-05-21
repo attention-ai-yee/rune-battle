@@ -125,8 +125,8 @@
   /* Mobile card size override */
   .card-mobile {
     @media (max-width: 640px) {
-      width: 90px;
-      height: 126px;
+      width: 100px;
+      height: 140px;
     }
   }
 

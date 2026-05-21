@@ -37,7 +37,7 @@ const Hand: React.FC<HandProps> = ({
 
   if (cards.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[140px] sm:h-[180px]">
+      <div className="flex items-center justify-center h-[155px] sm:h-[200px]">
         <p className="text-gray-500 text-sm italic">
           {isEnemyTurn ? '敌人回合...' : '手中无牌'}
         </p>
@@ -79,7 +79,7 @@ const Hand: React.FC<HandProps> = ({
             }}
             className={`
               transition-transform duration-200 flex-shrink-0
-              ${index > 0 && !isDesktop ? '-ml-7' : ''}
+              ${index > 0 && !isDesktop ? '-ml-6' : ''}
             `}
           >
             <Card

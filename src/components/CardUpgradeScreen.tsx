@@ -39,7 +39,7 @@ const CardUpgradeScreen: React.FC<CardUpgradeScreenProps> = ({
               onClick={() => onSelectCard(card)}
             >
               {/* Current card */}
-              <div className="text-[9px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">当前</div>
+              <div className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">当前</div>
               <Card
                 card={card}
                 isSelected={false}
@@ -52,17 +52,17 @@ const CardUpgradeScreen: React.FC<CardUpgradeScreenProps> = ({
               <div className="text-rune-gold text-base sm:text-lg">↓</div>
 
               {/* Upgraded preview */}
-              <div className="text-[9px] sm:text-xs text-amber-400 mb-0.5 sm:mb-1">升级后</div>
-              <div className="relative w-[90px] h-[126px] sm:w-[110px] sm:h-[155px] rounded-lg border-2 border-amber-400/60 bg-gradient-to-b from-amber-950/60 to-rune-card animate-glow-epic flex flex-col p-1.5 sm:p-2 transition-all duration-200 group-hover:scale-105 group-hover:border-amber-400 active:scale-95">
+              <div className="text-[10px] sm:text-xs text-amber-400 mb-0.5 sm:mb-1">升级后</div>
+              <div className="relative w-[100px] h-[140px] sm:w-[120px] sm:h-[168px] rounded-lg border-2 border-amber-400/60 bg-gradient-to-b from-amber-950/60 to-rune-card animate-glow-epic flex flex-col p-1.5 sm:p-2 transition-all duration-200 group-hover:scale-105 group-hover:border-amber-400 active:scale-95">
                 {/* Cost badge */}
-                <div className="absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-rune-dark border-2 border-rune-gold flex items-center justify-center z-10">
-                  <span className="text-rune-gold text-[10px] sm:text-sm font-bold">
+                <div className="absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-rune-dark border-2 border-rune-gold flex items-center justify-center z-10">
+                  <span className="text-rune-gold text-[12px] sm:text-base font-bold">
                     {CARD_UPGRADES[card.templateId]?.cost ?? card.cost}
                   </span>
                 </div>
 
                 {/* Upgraded name */}
-                <div className="text-center text-[9px] sm:text-sm font-bold mt-1 sm:mt-2 text-amber-300 drop-shadow-md">
+                <div className="text-center text-[10px] sm:text-sm font-bold mt-1 sm:mt-2 text-amber-300 drop-shadow-md">
                   {preview?.name ?? card.name}
                 </div>
 
@@ -71,14 +71,14 @@ const CardUpgradeScreen: React.FC<CardUpgradeScreenProps> = ({
 
                 {/* Upgraded description */}
                 <div className="flex-1 flex items-center justify-center">
-                  <p className="text-center text-[7px] sm:text-xs text-amber-200 leading-tight px-0.5 sm:px-1">
+                  <p className="text-center text-[8px] sm:text-xs text-amber-200 leading-tight px-0.5 sm:px-1">
                     {preview?.description ?? card.description}
                   </p>
                 </div>
 
                 {/* Exhaust label */}
                 {card.exhaust && (
-                  <div className="text-center text-[7px] sm:text-[10px] text-red-400 font-bold mt-0.5">
+                  <div className="text-center text-[8px] sm:text-[10px] text-red-400 font-bold mt-0.5">
                     消耗
                   </div>
                 )}
