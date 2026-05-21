@@ -5,6 +5,7 @@ import MapScreen from './components/MapScreen';
 import CardUpgradeScreen from './components/CardUpgradeScreen';
 import CardRewardScreen from './components/CardRewardScreen';
 import { useGameState } from './hooks/useGameState';
+import { sfxClick, sfxMapSelect, sfxVictory, sfxCardPlay } from './utils/sounds';
 
 const App: React.FC = () => {
   const {
@@ -66,7 +67,7 @@ const App: React.FC = () => {
 
           {/* Start button */}
           <button
-            onClick={startGame}
+            onClick={() => { sfxClick(); startGame(); }}
             className="
               touch-target px-8 sm:px-12 py-3 sm:py-4 rounded-xl text-lg sm:text-xl font-bold
               bg-gradient-to-r from-purple-900/50 to-indigo-900/50
@@ -164,7 +165,7 @@ const App: React.FC = () => {
 
         <div className="flex gap-3 sm:gap-4">
           <button
-            onClick={restartGame}
+            onClick={() => { sfxClick(); restartGame(); }}
             className="
               touch-target px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base
               bg-rune-red/20 border-2 border-rune-red/50 text-rune-red
@@ -176,7 +177,7 @@ const App: React.FC = () => {
             重新开始
           </button>
           <button
-            onClick={goToTitle}
+            onClick={() => { sfxClick(); goToTitle(); }}
             className="
               touch-target px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base
               bg-gray-800/40 border-2 border-gray-600/50 text-gray-400
@@ -222,7 +223,7 @@ const App: React.FC = () => {
 
           <div className="flex gap-3 sm:gap-4">
             <button
-              onClick={restartGame}
+              onClick={() => { sfxClick(); restartGame(); }}
               className="
                 touch-target px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base
                 bg-rune-gold/20 border-2 border-rune-gold/50 text-rune-gold
@@ -234,7 +235,7 @@ const App: React.FC = () => {
               再来一局
             </button>
             <button
-              onClick={goToTitle}
+              onClick={() => { sfxClick(); goToTitle(); }}
               className="
                 touch-target px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base
                 bg-gray-800/40 border-2 border-gray-600/50 text-gray-400

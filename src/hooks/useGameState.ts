@@ -24,6 +24,11 @@ import {
   MAX_RETAIN,
 } from '../utils/gameLogic';
 import { MAP_LAYERS } from '../data/enemies';
+import {
+  sfxCardPlay, sfxHit, sfxHeavyHit, sfxDefend, sfxSpell, sfxEnemyAttack,
+  sfxPlayerHit, sfxEndTurn, sfxEnemyTurn, sfxVictory, sfxDefeat,
+  sfxDraw, sfxPotion, sfxRetain, sfxStatusEffect, sfxMapSelect,
+} from '../utils/sounds';
 
 /** Custom hook for managing all game state */
 export function useGameState() {
@@ -43,18 +48,26 @@ export function useGameState() {
     if (state.screen !== 'battle') return;
 
     const timer = setTimeout(() => {
+      sfxEnemyTurn();
       setState(prev => {
         if (!prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
         const afterEnemy = processEnemyActions(prev);
 
+        // Play player hit sound if player took damage
+        if (afterEnemy.player.hp < prev.player.hp) {
+          sfxPlayerHit();
+        }
+
         // If game over, stop
         if (afterEnemy.screen === 'gameOver') {
+          sfxDefeat();
           return afterEnemy;
         }
 
         // Start new player turn
         const afterTurn = startNewPlayerTurn(afterEnemy);
+        sfxDraw();
         return afterTurn;
       });
     }, 800);
@@ -139,6 +152,7 @@ export function useGameState() {
 
   /** Select an enemy on the map to start a battle */
   const selectMapNode = useCallback((layerIndex: number, nodeIndex: number) => {
+    sfxMapSelect();
     setState(prev => {
       if (prev.screen !== 'map') return prev;
 
@@ -206,11 +220,13 @@ export function useGameState() {
 
       // If card needs a target and there are multiple enemies
       if (cardNeedsTarget(card) && prev.enemies.length > 1) {
+        sfxCardPlay();
         return { ...prev, selectedCardId: cardId };
       }
 
       // If card needs a target but only one enemy, auto-target
       if (cardNeedsTarget(card) && prev.enemies.length === 1) {
+        // Sound will be played in playCardOnState based on card type
         return playCardOnState(prev, card, 0);
       }
 
@@ -238,6 +254,7 @@ export function useGameState() {
 
   /** End the player's turn */
   const endTurn = useCallback(() => {
+    sfxEndTurn();
     setState(prev => {
       if (prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
@@ -258,6 +275,7 @@ export function useGameState() {
 
   /** Toggle retain on a card (right-click / long press) */
   const toggleRetain = useCallback((cardId: string) => {
+    sfxRetain();
     setState(prev => {
       if (prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
@@ -289,6 +307,7 @@ export function useGameState() {
 
   /** Use an energy potion */
   const usePotionAction = useCallback(() => {
+    sfxPotion();
     setState(prev => {
       if (prev.screen !== 'battle' || prev.isEnemyTurn) return prev;
       return usePotionLogic(prev);
@@ -503,6 +522,20 @@ function playCardOnState(
   // Deduct energy
   const player = { ...state.player, energy: state.player.energy - card.cost };
 
+  // Play sound based on card type
+  const effectType = card.effect.type;
+  if (['attack', 'multiAttack', 'drain', 'multiHit', 'handCountDamage', 'selfDamage', 'aoeAttack'].includes(effectType)) {
+    if (['multiAttack', 'multiHit', 'aoeAttack'].includes(effectType)) {
+      sfxHeavyHit();
+    } else {
+      sfxHit();
+    }
+  } else if (['defend', 'armor', 'doubleArmor'].includes(effectType)) {
+    sfxDefend();
+  } else {
+    sfxSpell();
+  }
+
   // Apply card effect
   const afterEffect = applyCardEffect(card, { ...state, player }, targetEnemyIndex);
 
@@ -544,6 +577,7 @@ function playCardOnState(
 
   if (livingEnemies.length === 0 && state.screen === 'battle') {
     // Player wins the battle
+    sfxVictory();
     return {
       ...afterEffect,
       player: finalPlayer,
