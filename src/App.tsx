@@ -69,7 +69,7 @@ const App: React.FC = () => {
   // Title Screen
   if (state.screen === 'title') {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-rune-pattern overflow-hidden">
+      <div className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-rune-pattern overflow-hidden">
         {/* Background particles effect */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {Array.from({ length: 20 }).map((_, i) => (
@@ -139,7 +139,7 @@ const App: React.FC = () => {
   // Map Screen
   if (state.screen === 'map') {
     return (
-      <div className="h-screen w-screen bg-rune-dark">
+      <div className="h-[100dvh] w-screen bg-rune-dark">
         <MuteButton />
         <MapScreen
           mapLayers={state.mapLayers}
@@ -152,7 +152,7 @@ const App: React.FC = () => {
   // Battle Screen
   if (state.screen === 'battle' || state.screen === 'battleWin') {
     return (
-      <div className="h-screen w-screen bg-rune-dark">
+      <div className="h-[100dvh] w-screen bg-rune-dark">
         <MuteButton />
         <GameBoard
           state={state}
@@ -172,7 +172,7 @@ const App: React.FC = () => {
   if (state.screen === 'cardReward') {
     const deckSize = state.drawPile.length + state.hand.length + state.discardPile.length;
     return (
-      <div className="h-screen w-screen bg-rune-dark">
+      <div className="h-[100dvh] w-screen bg-rune-dark">
         <MuteButton />
         <CardRewardScreen
           rewardChoices={state.rewardChoices}
@@ -187,7 +187,7 @@ const App: React.FC = () => {
   // Card Upgrade Screen
   if (state.screen === 'cardUpgrade') {
     return (
-      <div className="h-screen w-screen bg-rune-dark">
+      <div className="h-[100dvh] w-screen bg-rune-dark">
         <MuteButton />
         <CardUpgradeScreen
           upgradeChoices={state.upgradeChoices}
@@ -201,7 +201,7 @@ const App: React.FC = () => {
   // Game Over Screen
   if (state.screen === 'gameOver') {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-rune-pattern animate-fade-in">
+      <div className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-rune-pattern animate-fade-in">
         <MuteButton />
         <div className="text-5xl sm:text-7xl mb-4 sm:mb-6">💀</div>
         <h2 className="text-3xl sm:text-4xl font-bold text-rune-red mb-1 sm:mb-2">战斗失败</h2>
@@ -240,7 +240,7 @@ const App: React.FC = () => {
   // Victory Screen
   if (state.screen === 'victory') {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-rune-pattern animate-fade-in">
+      <div className="h-[100dvh] w-screen flex flex-col items-center justify-center bg-rune-pattern animate-fade-in">
         <MuteButton />
         {/* Victory particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -299,7 +299,7 @@ const App: React.FC = () => {
 
   // Fallback
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-rune-dark">
+    <div className="h-[100dvh] w-screen flex items-center justify-center bg-rune-dark">
       <p className="text-gray-500">加载中...</p>
     </div>
   );

@@ -49,7 +49,7 @@ const Hand: React.FC<HandProps> = ({
     <div
       className="
         flex items-end justify-center
-        px-2 sm:px-4 pb-2 pt-2 sm:pt-4
+        px-2 sm:px-4 pb-3 pt-1 sm:pt-2
         overflow-x-auto scroll-snap-x
         sm:overflow-visible
         gap-0 sm:gap-2
@@ -79,7 +79,7 @@ const Hand: React.FC<HandProps> = ({
             }}
             className={`
               transition-transform duration-200 flex-shrink-0
-              ${index > 0 && !isDesktop ? '-ml-6' : ''}
+              ${index > 0 && !isDesktop ? '-ml-5' : ''}
             `}
           >
             <Card

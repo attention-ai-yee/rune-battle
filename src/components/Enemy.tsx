@@ -37,7 +37,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
     <div
       onClick={isTargetable ? () => onTarget(index) : undefined}
       className={`
-        relative flex flex-col items-center p-2 sm:p-4 rounded-xl
+        relative flex flex-col items-center p-3 sm:p-4 rounded-xl
         bg-gradient-to-b from-gray-800/60 to-gray-900/80
         border-2 transition-all duration-300 touch-target
         ${enemy.isHit ? 'animate-enemy-hit border-rune-red' : 'border-gray-700/50'}
@@ -65,7 +65,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
       </div>
 
       {/* Enemy emoji/avatar */}
-      <div className={`text-5xl sm:text-5xl mb-0.5 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`} style={{ animationDelay: `${index * 0.5}s` }}>
+      <div className={`text-6xl sm:text-7xl mb-1 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`} style={{ animationDelay: `${index * 0.5}s` }}>
         {enemy.emoji}
       </div>
 
@@ -96,7 +96,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
       )}
 
       {/* HP Bar */}
-      <div className="w-full max-w-[90px] sm:max-w-[120px] mb-0.5 sm:mb-1">
+      <div className="w-full max-w-[100px] sm:max-w-[130px] mb-0.5 sm:mb-1">
         <div className="h-2 sm:h-2 bg-gray-800 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
