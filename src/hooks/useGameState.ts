@@ -331,8 +331,14 @@ export function useGameState() {
     setState(prev => {
       if (prev.screen !== 'battleWin') return prev;
 
-      // Roll card rewards (3 cards weighted by rarity)
-      const rewardTemplates = getRandomCardRewardTemplates(3);
+      // Roll card rewards (3 cards weighted by rarity + chain affinity)
+      const deckTemplateIds = new Set([
+        ...prev.drawPile.map(c => c.templateId),
+        ...prev.discardPile.map(c => c.templateId),
+        ...prev.hand.map(c => c.templateId),
+        ...(prev.exhaustedPile ?? []).map(c => c.templateId),
+      ]);
+      const rewardTemplates = getRandomCardRewardTemplates(3, deckTemplateIds);
 
       return {
         ...prev,

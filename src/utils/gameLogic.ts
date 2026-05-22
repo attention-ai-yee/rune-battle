@@ -305,13 +305,72 @@ const REWARD_RARITY_WEIGHTS: Record<string, number> = {
   epic: 10,
 };
 
-/** Select random card templates as battle rewards, weighted by rarity.
+/** Card chain definitions — each chain maps a keyword set to related card IDs.
+ *  When the player already has cards from a chain, rewards from the same chain get boosted.
+ */
+const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
+  // 灼烧链
+  {
+    keywords: ['burn', 'ember', 'inferno'],
+    cardIds: ['burn_strike', 'inferno', 'ember_dance', 'burn_detonate'],
+  },
+  // 毒链
+  {
+    keywords: ['poison', 'venom', 'toxic', 'corrode'],
+    cardIds: ['poison_blade', 'venomous_stab', 'contagion', 'toxic_burst', 'corrode', 'venom_blade_dance'],
+  },
+  // 冰冻/控制链
+  {
+    keywords: ['freeze', 'frost', 'ice', 'weaken'],
+    cardIds: ['frost_nova', 'ice_armor', 'weaken', 'crippling_blow'],
+  },
+  // 护甲链
+  {
+    keywords: ['armor', 'defend', 'bastion', 'fortify', 'iron_wall'],
+    cardIds: ['defend', 'iron_wall', 'fortify', 'bastion', 'shield_bash', 'armor_engine', 'bulwark', 'iron_focus'],
+  },
+  // 力量链
+  {
+    keywords: ['strength', 'battle_cry', 'rage'],
+    cardIds: ['battle_cry', 'heavy_strike', 'skull_crusher', 'war_frenzy', 'rage_mode'],
+  },
+  // 手牌/抽牌链
+  {
+    keywords: ['draw', 'adrenaline', 'focus', 'mind'],
+    cardIds: ['adrenaline', 'focus', 'dark_ritual', 'mind_surge', 'combo_strike', 'discard_draw'],
+  },
+];
+
+/** Calculate chain affinity bonus for a card template based on current deck.
+ *  If the deck already contains cards from a chain, cards in the same chain get +weight.
+ */
+function getChainAffinityBonus(templateId: string, deckTemplateIds: Set<string>): number {
+  let bonus = 0;
+  for (const chain of CARD_CHAINS) {
+    if (!chain.cardIds.includes(templateId)) continue;
+    // Count how many cards from this chain are already in the deck
+    let chainCount = 0;
+    for (const id of chain.cardIds) {
+      if (deckTemplateIds.has(id)) chainCount++;
+    }
+    // Each matching chain card adds a bonus (up to 3 cards' worth)
+    if (chainCount > 0) {
+      bonus += Math.min(chainCount, 3) * 15; // +15 per existing chain card, max +45
+    }
+  }
+  return bonus;
+}
+
+/** Select random card templates as battle rewards, weighted by rarity + chain affinity.
+ *  If deckTemplateIds is provided, cards from chains the player already has get boosted.
  *  Returns `count` unique CardTemplate objects.
  */
-export function getRandomCardRewardTemplates(count: number = 3): CardTemplate[] {
+export function getRandomCardRewardTemplates(count: number = 3, deckTemplateIds?: Set<string>): CardTemplate[] {
+  const templateIdSet = deckTemplateIds ?? new Set<string>();
   const pool = CARD_TEMPLATES.map(t => ({
     template: t,
-    weight: REWARD_RARITY_WEIGHTS[t.rarity] ?? REWARD_RARITY_WEIGHTS.common,
+    weight: (REWARD_RARITY_WEIGHTS[t.rarity] ?? REWARD_RARITY_WEIGHTS.common)
+      + getChainAffinityBonus(t.id, templateIdSet),
   }));
   const results: CardTemplate[] = [];
   const available = [...pool];

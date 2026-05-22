@@ -732,6 +732,13 @@ export const STARTING_DECK_COMPOSITION: Record<string, number> = {
   regenerate: 1,
   double_strike: 1,
   shiv: 1,
+  // 控制链核心牌
+  weaken: 1,
+  ice_armor: 1,
+  // combo链核心牌
+  corrode: 1,
+  ember_dance: 1,
+  combo_strike: 1,
 };
 
 /** Get a card template by ID */

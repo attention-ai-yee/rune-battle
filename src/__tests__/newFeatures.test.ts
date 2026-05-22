@@ -828,12 +828,11 @@ describe('🃏 Initial Deck Composition', () => {
     expect(STARTING_DECK_COMPOSITION['adrenaline']).toBe(1);
   });
 
-  it('starting deck does NOT include: execution, blood_pact, arcane_shield, vampiric_touch, weaken, entrench', () => {
+  it('starting deck does NOT include: execution, blood_pact, arcane_shield, vampiric_touch, entrench', () => {
     expect(STARTING_DECK_COMPOSITION['execution']).toBeUndefined();
     expect(STARTING_DECK_COMPOSITION['blood_pact']).toBeUndefined();
     expect(STARTING_DECK_COMPOSITION['arcane_shield']).toBeUndefined();
     expect(STARTING_DECK_COMPOSITION['vampiric_touch']).toBeUndefined();
-    expect(STARTING_DECK_COMPOSITION['weaken']).toBeUndefined();
     expect(STARTING_DECK_COMPOSITION['entrench']).toBeUndefined();
   });
 
