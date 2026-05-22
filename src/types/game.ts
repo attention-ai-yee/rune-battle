@@ -30,6 +30,22 @@ export interface CardEffect {
   handScaleMultiplier?: number;
   /** Use player armor as damage (for shield_bash card effect) */
   armorAsDamage?: boolean;
+  /** Ignore enemy armor completely (piercing attack) */
+  piercing?: boolean;
+  /** Heal player by this amount on defend (for regenerate) */
+  healAmount?: number;
+  /** Scale armor gain by current energy (for bulwark) */
+  energyScaleArmor?: boolean;
+  /** Scale damage by target's poison stacks × this multiplier (for toxic_burst) */
+  poisonScaleDamage?: boolean;
+  /** Multiplier for poison-scaled damage (default 3) */
+  poisonMultiplier?: number;
+  /** Strength gain is temporary (cleared at end of turn) */
+  temporary?: boolean;
+  /** Discard the oldest card in hand before drawing (for discard_draw) */
+  discardOldest?: boolean;
+  /** Number of oldest cards to discard (for discard_draw+, default 1 when discardOldest is true) */
+  discardCount?: number;
 }
 
 /** Card template - defines a card blueprint */

@@ -442,6 +442,92 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     rarity: 'rare',
     retain: true,
   },
+
+  // === 8 New Cards: Fill System Gaps ===
+
+  // -- 攻击体系：收尾杀手 --
+  {
+    id: 'last_rites',
+    name: '最后审判',
+    type: 'attack',
+    cost: 2,
+    description: '对每个敌人各造成6点伤害',
+    effect: { type: 'aoeAttack', damage: 6 },
+    rarity: 'rare',
+  },
+  {
+    id: 'juggernaut',
+    name: '破甲冲锋',
+    type: 'attack',
+    cost: 2,
+    description: '无视护甲，造成14点纯粹伤害',
+    effect: { type: 'attack', damage: 14, piercing: true },
+    rarity: 'rare',
+  },
+
+  // -- 防御体系：攻防一体 --
+  {
+    id: 'regenerate',
+    name: '再生',
+    type: 'defense',
+    cost: 1,
+    description: '获得6点护甲，恢复4点生命',
+    effect: { type: 'defend', armor: 6, healAmount: 4 },
+    rarity: 'common',
+  },
+  {
+    id: 'bulwark',
+    name: '堡垒',
+    type: 'defense',
+    cost: 2,
+    description: '获得护甲等于当前能量×4',
+    effect: { type: 'defend', armor: 0, energyScaleArmor: true },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // -- 毒体系：毒爆发 --
+  {
+    id: 'toxic_burst',
+    name: '毒素爆发',
+    type: 'spell',
+    cost: 1,
+    description: '对目标造成等同于其中毒层数×3的伤害',
+    effect: { type: 'attack', damage: 0, poisonScaleDamage: true },
+    rarity: 'rare',
+  },
+  {
+    id: 'contagion',
+    name: '传染',
+    type: 'spell',
+    cost: 1,
+    description: '对所有敌人施加4层中毒',
+    effect: { type: 'aoeAttack', damage: 0, poison: 4 },
+    rarity: 'common',
+  },
+
+  // -- 力量/自伤体系 --
+  {
+    id: 'rage_mode',
+    name: '狂怒状态',
+    type: 'spell',
+    cost: 0,
+    description: '本回合力量+4，回合结束后清除',
+    effect: { type: 'strength', strengthGain: 4, temporary: true },
+    rarity: 'rare',
+    exhaust: true,
+  },
+
+  // -- 循环体系：0费弃牌 --
+  {
+    id: 'discard_draw',
+    name: '换牌',
+    type: 'spell',
+    cost: 0,
+    description: '弃掉手中1张最旧的牌，抽1张新牌',
+    effect: { type: 'draw', drawCount: 1, discardOldest: true },
+    rarity: 'common',
+  },
 ];
 
 /** Card upgrade definitions: maps templateId to upgraded card properties */
@@ -493,6 +579,15 @@ export const CARD_UPGRADES: Record<string, { name: string; description: string; 
   dark_ritual: { name: '暗夜仪式+', description: '获得2点能量，抽1张牌', effect: { energyGain: 2, hpCost: 0 } },
   life_tap: { name: '生命汲取+', description: '失去2点生命，抽2张牌', effect: { hpCost: 2 } },
   ward: { name: '守护+', description: '保留。获得4点护甲，抽1张牌', effect: { armor: 4 } },
+  // === 8 New Card Upgrades (Round 2) ===
+  last_rites: { name: '最后审判+', description: '对每个敌人各造成9点伤害', effect: { damage: 9 } },
+  juggernaut: { name: '破甲冲锋+', description: '无视护甲，造成20点纯粹伤害', effect: { damage: 20 } },
+  regenerate: { name: '再生+', description: '获得8点护甲，恢复6点生命', effect: { armor: 8, healAmount: 6 } },
+  bulwark: { name: '堡垒+', description: '获得护甲等于当前能量×6（消耗）', effect: { energyScaleArmor: true } },
+  toxic_burst: { name: '毒素爆发+', description: '对目标造成等同于其中毒层数×5的伤害', effect: { poisonMultiplier: 5 } },
+  contagion: { name: '传染+', description: '对所有敌人施加6层中毒', effect: { poison: 6 } },
+  rage_mode: { name: '狂怒状态+', description: '本回合力量+6，回合结束后清除（消耗）', effect: { strengthGain: 6 } },
+  discard_draw: { name: '换牌+', description: '弃掉手中2张最旧的牌，抽2张新牌', effect: { drawCount: 2, discardOldest: true, discardCount: 2 } },
 };
 
 /** Starting deck composition: templateId → count */

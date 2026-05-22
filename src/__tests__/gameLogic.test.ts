@@ -1277,11 +1277,18 @@ describe('Card data integrity', () => {
 
       if (template.effect.type === 'attack' || template.effect.type === 'multiAttack' || template.effect.type === 'attackAll') {
         // shield_bash uses armorAsDamage with damage: 0 base
-        const hasDamage = (template.effect.damage ?? 0) > 0 || template.effect.armorAsDamage;
+        // toxic_burst uses poisonScaleDamage with damage: 0 base
+        const hasDamage = (template.effect.damage ?? 0) > 0 || template.effect.armorAsDamage || template.effect.poisonScaleDamage;
         expect(hasDamage).toBe(true);
       }
+      if (template.effect.type === 'aoeAttack') {
+        // contagion has damage: 0 but applies poison to all enemies
+        const hasDamageOrEffect = (template.effect.damage ?? 0) > 0 || (template.effect.poison ?? 0) > 0 || template.effect.burnDuration;
+        expect(hasDamageOrEffect).toBeTruthy();
+      }
       if (template.effect.type === 'defend') {
-        const hasArmorOrDouble = (template.effect.armor ?? 0) > 0 || template.effect.doubleArmor;
+        // bulwark uses energyScaleArmor (armor: 0 base), regenerate has healAmount, others have armor > 0
+        const hasArmorOrDouble = (template.effect.armor ?? 0) > 0 || template.effect.doubleArmor || template.effect.energyScaleArmor || (template.effect.healAmount ?? 0) > 0;
         expect(hasArmorOrDouble).toBe(true);
       }
       if (template.effect.type === 'heal') {

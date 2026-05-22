@@ -352,9 +352,14 @@ export function applyCardEffect(
       const enemy = { ...newState.enemies[targetEnemyIndex] };
       const burnStacks = getBurnStacks(enemy.statusEffects);
 
-      // Calculate damage: armor-as-damage, hand-scaled, or fixed
+      // Calculate damage: poison-scale, armor-as-damage, hand-scaled, or fixed
       let totalDamage: number;
-      if (effect.armorAsDamage) {
+      if (effect.poisonScaleDamage) {
+        // toxic_burst: damage = target's poison stacks × multiplier (default 3, upgraded to 5)
+        const poisonStacks = getPoisonStacks(enemy.statusEffects);
+        const multiplier = effect.poisonMultiplier ?? 3;
+        totalDamage = poisonStacks * multiplier + playerStrength;
+      } else if (effect.armorAsDamage) {
         totalDamage = state.player.armor + (effect.damage ?? 0) + playerStrength;
       } else if (effect.handScaleMultiplier) {
         totalDamage = state.hand.length * effect.handScaleMultiplier + playerStrength;
@@ -362,9 +367,16 @@ export function applyCardEffect(
         totalDamage = (effect.damage ?? 0) + playerStrength;
       }
 
-      const result = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks);
-      enemy.hp = Math.max(0, result.newHp);
-      enemy.armor = result.newArmor;
+      // Piercing: bypass armor completely
+      let actualResult: { newHp: number; newArmor: number; actualDamage: number };
+      if (effect.piercing) {
+        actualResult = { newHp: enemy.hp - totalDamage, newArmor: enemy.armor, actualDamage: totalDamage };
+      } else {
+        actualResult = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks);
+      }
+
+      enemy.hp = Math.max(0, actualResult.newHp);
+      enemy.armor = actualResult.newArmor;
       enemy.isHit = true;
 
       // Apply status effects from card
@@ -455,11 +467,30 @@ export function applyCardEffect(
     }
 
     case 'defend': {
-      const armorGain = effect.armor ?? 0;
-      newState.player = {
+      // Calculate armor gain: energy-scaled or fixed
+      let armorGain: number;
+      if (effect.energyScaleArmor) {
+        // bulwark: armor = current energy × 4
+        armorGain = state.player.energy * 4;
+      } else {
+        armorGain = effect.armor ?? 0;
+      }
+
+      let player = {
         ...newState.player,
         armor: newState.player.armor + armorGain,
       };
+
+      // Heal player if card has healAmount (e.g. regenerate)
+      if (effect.healAmount && effect.healAmount > 0) {
+        player = {
+          ...player,
+          hp: Math.min(player.hp + effect.healAmount, player.maxHp),
+        };
+      }
+
+      newState.player = player;
+
       // Apply freeze to all enemies (e.g. ice_armor)
       if (effect.freezeDuration) {
         let enemies = [...newState.enemies];

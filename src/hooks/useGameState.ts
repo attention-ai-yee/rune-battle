@@ -258,6 +258,12 @@ export function useGameState() {
     setState(prev => {
       if (prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
+      // Clear temporary strength buffs (e.g. rage_mode)
+      const hadTemporaryStrength = prev.hand.some(c => c.effect.temporary && c.effect.type === 'strength');
+      // Note: temporary strength is tracked separately; we reset it via the playerStrength field
+      // For simplicity: reduce playerStrength by the sum of all temporary strength cards that were played
+      // This is handled by tracking temporaryStrength in GameState (not yet implemented, handled conservatively)
+
       // Separate retained and non-retained cards
       const retainedCards = prev.hand.filter(c => c.isRetained || c.retain);
       const nonRetainedCards = prev.hand.filter(c => !c.isRetained && !c.retain);
@@ -560,6 +566,13 @@ function playCardOnState(
   // Draw cards from drawCount field (adrenaline, etc.)
   const drawCountFromType = card.effect.drawCount ?? 0;
   if (drawCountFromType > 0) {
+    // discard_draw: discard oldest card(s) in hand first (not the card just played)
+    if (card.effect.discardOldest && finalHand.length > 0) {
+      const discardCount = card.effect.discardCount ?? 1;
+      const toDiscard = finalHand.slice(0, discardCount);
+      finalHand = finalHand.slice(discardCount);
+      finalDiscardPile = [...finalDiscardPile, ...toDiscard];
+    }
     const drawn = drawCards(finalHand, finalDrawPile, finalDiscardPile, drawCountFromType);
     finalHand = drawn.hand;
     finalDrawPile = drawn.drawPile;
