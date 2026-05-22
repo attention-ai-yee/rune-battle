@@ -592,13 +592,13 @@ export const CARD_UPGRADES: Record<string, { name: string; description: string; 
 
 /** Starting deck composition: templateId → count */
 export const STARTING_DECK_COMPOSITION: Record<string, number> = {
-  strike: 4,
-  defend: 4,
+  strike: 5,
+  defend: 5,
   heavy_strike: 2,
   iron_wall: 2,
   twin_strike: 1,
   pierce: 1,
-  fortify: 1,
+  fortify: 2,
   fireball: 1,
   heal: 1,
   chain_lightning: 1,
@@ -612,6 +612,10 @@ export const STARTING_DECK_COMPOSITION: Record<string, number> = {
   adrenaline: 1,
   focus: 1,
   bastion: 1,
+  dark_ritual: 1,
+  regenerate: 1,
+  double_strike: 1,
+  shiv: 1,
 };
 
 /** Get a card template by ID */

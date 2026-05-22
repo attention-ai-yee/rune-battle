@@ -144,6 +144,7 @@ export function useGameState() {
         upgradeChoices: [],
         rewardChoices: [],
         lastPlayedCard: null,
+        exhaustedPile: [],
       };
 
       return initialState;
@@ -204,6 +205,7 @@ export function useGameState() {
         upgradeChoices: [],
         rewardChoices: [],
         lastPlayedCard: null,
+        exhaustedPile: [], // 战斗开始时清空消耗牌堆
       };
 
       return battleState;
@@ -454,6 +456,9 @@ export function useGameState() {
     const missingHp = prev.player.maxHp - prev.player.hp;
     const healAmount = Math.floor(missingHp * 0.2);
 
+    // Recover exhausted cards back into the deck for next battle
+    const exhaustedCards = prev.exhaustedPile ?? [];
+
     return {
       ...prev,
       screen: 'map',
@@ -468,8 +473,9 @@ export function useGameState() {
       },
       enemies: [],
       hand: [],
-      drawPile: prev.drawPile, // Keep deck state for next battle
+      drawPile: [...prev.drawPile, ...exhaustedCards], // Recover exhausted cards
       discardPile: prev.discardPile,
+      exhaustedPile: [], // Clear exhausted pile
       retainedCards: [],
       mapLayers,
       isEnemyTurn: false,
@@ -545,9 +551,10 @@ function playCardOnState(
   // Apply card effect
   const afterEffect = applyCardEffect(card, { ...state, player }, targetEnemyIndex);
 
-  // Move card from hand; exhaust cards are removed from battle entirely
+  // Move card from hand; exhaust cards go to exhaustedPile (recovered after battle)
   const hand = afterEffect.hand.filter(c => c.instanceId !== card.instanceId);
   const discardPile = card.exhaust ? afterEffect.discardPile : [...afterEffect.discardPile, card];
+  const exhaustedPile = card.exhaust ? [...(afterEffect.exhaustedPile ?? []), card] : (afterEffect.exhaustedPile ?? []);
 
   // Handle generic drawCards from card effects
   let finalHand = hand;
@@ -597,6 +604,7 @@ function playCardOnState(
       hand: finalHand,
       drawPile: finalDrawPile,
       discardPile: finalDiscardPile,
+      exhaustedPile,
       enemies: [],
       selectedCardId: null,
       screen: 'battleWin',
@@ -611,6 +619,7 @@ function playCardOnState(
     hand: finalHand,
     drawPile: finalDrawPile,
     discardPile: finalDiscardPile,
+    exhaustedPile,
     selectedCardId: null,
     lastPlayedCard: card,
   };

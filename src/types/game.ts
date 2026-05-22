@@ -188,6 +188,8 @@ export interface GameState {
   rewardChoices: CardTemplate[];
   /** Last card played this turn (for echo card) */
   lastPlayedCard: CardInstance | null;
+  /** Cards exhausted during current battle (recovered when battle ends) */
+  exhaustedPile: CardInstance[];
 }
 
 /** Floating damage number for visual feedback */

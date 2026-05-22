@@ -1011,6 +1011,7 @@ export function createInitialState(): GameState {
     upgradeChoices: [],
     rewardChoices: [],
     lastPlayedCard: null,
+    exhaustedPile: [],
   };
 }
 

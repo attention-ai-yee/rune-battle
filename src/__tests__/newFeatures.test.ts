@@ -837,13 +837,13 @@ describe('🃏 Initial Deck Composition', () => {
     expect(STARTING_DECK_COMPOSITION['entrench']).toBeUndefined();
   });
 
-  it('starting deck total count is reasonable (20-30 cards)', () => {
+  it('starting deck total count is reasonable (20-40 cards)', () => {
     const totalCards = Object.values(STARTING_DECK_COMPOSITION).reduce(
       (sum, count) => sum + count,
       0
     );
     expect(totalCards).toBeGreaterThanOrEqual(20);
-    expect(totalCards).toBeLessThanOrEqual(30);
+    expect(totalCards).toBeLessThanOrEqual(40);
   });
 
   it('all cards in starting deck reference valid templates', () => {
