@@ -177,8 +177,8 @@ export function useGameState() {
       const deck = fullDeck.length > 0 ? shuffle([...fullDeck]) : createStartingDeck();
       const shuffled = shuffle(deck);
 
-      // Draw initial hand of 5 cards
-      const { hand, drawPile, discardPile } = drawCards([], shuffled, [], 5);
+      // Draw initial hand of 4 cards
+      const { hand, drawPile, discardPile } = drawCards([], shuffled, [], 4);
 
       const battleState: GameState = {
         ...prev,

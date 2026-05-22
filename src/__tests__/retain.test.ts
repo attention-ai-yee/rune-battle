@@ -280,35 +280,35 @@ describe('📌 Retain - Card Data', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('📌 HAND_LIMIT and getHandLimit', () => {
-  it('HAND_LIMIT is 10', () => {
-    expect(HAND_LIMIT).toBe(10);
+  it('HAND_LIMIT is 8', () => {
+    expect(HAND_LIMIT).toBe(8);
   });
 
-  it('getHandLimit(0) = 5 (base hand size)', () => {
-    expect(getHandLimit(0)).toBe(5);
+  it('getHandLimit(0) = 4 (base hand size)', () => {
+    expect(getHandLimit(0)).toBe(4);
   });
 
-  it('getHandLimit(1) = 6 (5 + 1 retained)', () => {
-    expect(getHandLimit(1)).toBe(6);
+  it('getHandLimit(1) = 5 (4 + 1 retained)', () => {
+    expect(getHandLimit(1)).toBe(5);
   });
 
-  it('getHandLimit(2) = 7 (5 + 2 retained)', () => {
-    expect(getHandLimit(2)).toBe(7);
+  it('getHandLimit(2) = 6 (4 + 2 retained)', () => {
+    expect(getHandLimit(2)).toBe(6);
   });
 
-  it('getHandLimit(5) = 10 (5 + 5 retained, capped at HAND_LIMIT=10)', () => {
-    expect(getHandLimit(5)).toBe(10);
+  it('getHandLimit(4) = 8 (4 + 4 retained, capped at HAND_LIMIT=8)', () => {
+    expect(getHandLimit(4)).toBe(8);
   });
 
-  it('getHandLimit(10) = 10 (capped at HAND_LIMIT)', () => {
-    expect(getHandLimit(10)).toBe(10);
+  it('getHandLimit(8) = 8 (capped at HAND_LIMIT)', () => {
+    expect(getHandLimit(8)).toBe(8);
   });
 
-  it('getHandLimit formula: min(10, retainedCount + 5)', () => {
-    expect(getHandLimit(0)).toBe(Math.min(10, 0 + 5)); // 5
-    expect(getHandLimit(3)).toBe(Math.min(10, 3 + 5)); // 8
-    expect(getHandLimit(5)).toBe(Math.min(10, 5 + 5)); // 10
-    expect(getHandLimit(7)).toBe(Math.min(10, 7 + 5)); // 10
+  it('getHandLimit formula: min(8, retainedCount + 4)', () => {
+    expect(getHandLimit(0)).toBe(Math.min(8, 0 + 4)); // 4
+    expect(getHandLimit(3)).toBe(Math.min(8, 3 + 4)); // 7
+    expect(getHandLimit(4)).toBe(Math.min(8, 4 + 4)); // 8
+    expect(getHandLimit(7)).toBe(Math.min(8, 7 + 4)); // 8
   });
 });
 
@@ -347,8 +347,8 @@ describe('📌 Retained Cards Persist Between Turns', () => {
     // isRetained should be cleared
     const restoredCard = state.hand.find(c => c.instanceId === 'retain_card');
     expect(restoredCard!.isRetained).toBe(false);
-    // Should have drawn additional cards (handLimit = 7 for 2 retained cards, draw 7-2=5)
-    expect(state.hand.length).toBe(7); // 2 retained + 5 drawn
+    // Should have drawn additional cards (handLimit = 6 for 2 retained cards, draw 6-2=4)
+    expect(state.hand.length).toBe(6); // 2 retained + 4 drawn
     // retainedCards should be cleared
     expect(state.retainedCards).toHaveLength(0);
   });
@@ -414,8 +414,8 @@ describe('📌 Retained Cards Persist Between Turns', () => {
     expect(state.discardPile).toHaveLength(0);
 
     state = startNewPlayerTurn(state);
-    // 3 retained + drawn cards; handLimit = getHandLimit(3) = 8, draw 8-3=5
-    expect(state.hand.length).toBe(8); // 3 retained + 5 drawn
+    // 3 retained + drawn cards; handLimit = getHandLimit(3) = 7, draw 7-3=4
+    expect(state.hand.length).toBe(7); // 3 retained + 4 drawn
   });
 
   it('retained card can be retained again in subsequent turns', () => {
@@ -712,8 +712,8 @@ describe('📌 startNewPlayerTurn with Retained Cards', () => {
     });
 
     state = startNewPlayerTurn(state);
-    // handLimit = getHandLimit(1) = 6, cardsToDraw = 6 - 1 = 5
-    expect(state.hand.length).toBe(6); // 1 retained + 5 drawn
+    // handLimit = getHandLimit(1) = 5, cardsToDraw = 5 - 1 = 4
+    expect(state.hand.length).toBe(5); // 1 retained + 4 drawn
   });
 
   it('draws fewer cards when 2 retained cards are in hand', () => {
@@ -729,8 +729,8 @@ describe('📌 startNewPlayerTurn with Retained Cards', () => {
     });
 
     state = startNewPlayerTurn(state);
-    // handLimit = getHandLimit(2) = 7, cardsToDraw = 7 - 2 = 5
-    expect(state.hand.length).toBe(7); // 2 retained + 5 drawn
+    // handLimit = getHandLimit(2) = 6, cardsToDraw = 6 - 2 = 4
+    expect(state.hand.length).toBe(6); // 2 retained + 4 drawn
   });
 
   it('clears isRetained on restored cards', () => {
@@ -774,8 +774,8 @@ describe('📌 startNewPlayerTurn with Retained Cards', () => {
     });
 
     const result = startNewPlayerTurn(state);
-    // handLimit = getHandLimit(0) = 5, draw 5 cards
-    expect(result.hand.length).toBe(5);
+    // handLimit = getHandLimit(0) = 4, draw 4 cards
+    expect(result.hand.length).toBe(4);
     expect(result.retainedCards).toHaveLength(0);
   });
 
@@ -877,8 +877,8 @@ describe('📌 Full Turn Cycle with Retain', () => {
     expect(restoredFocus!.retain).toBe(true);
 
     // Hand should have: 3 retained + drawn cards
-    // handLimit = getHandLimit(3) = 8, cardsToDraw = 8 - 3 = 5
-    expect(state.hand.length).toBe(8);
+    // handLimit = getHandLimit(3) = 7, cardsToDraw = 7 - 3 = 4
+    expect(state.hand.length).toBe(7);
   });
 
   it('focus card persists across multiple turns', () => {

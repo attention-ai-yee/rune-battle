@@ -763,7 +763,7 @@ describe('startNewPlayerTurn', () => {
     expect(result.player.energy).toBe(3);
   });
 
-  it('should draw 5 cards', () => {
+  it('should draw 4 cards', () => {
     const deck = createStartingDeck();
     const state = makeState({
       drawPile: deck,
@@ -771,7 +771,7 @@ describe('startNewPlayerTurn', () => {
       discardPile: [],
     });
     const result = startNewPlayerTurn(state);
-    expect(result.hand.length).toBe(5);
+    expect(result.hand.length).toBe(4);
   });
 
   it('should increment turn number', () => {
@@ -806,19 +806,18 @@ describe('drawCards', () => {
     expect(result.drawPile.length).toBe(cards.length - 5);
   });
 
-  it('should reshuffle discard pile when draw pile is empty', () => {
-    const cards = createStartingDeck();
-    // Move most cards to discard, keep few in draw
-    const discard = cards.slice(0, 14);
-    const draw = cards.slice(14); // 2 cards in draw
-    const result = drawCards([], draw, discard, 5);
-    expect(result.hand.length).toBe(5);
-  });
-
   it('should handle drawing when total cards are less than requested', () => {
     const fewCards = createStartingDeck().slice(0, 3);
     const result = drawCards([], fewCards, [], 5);
     expect(result.hand.length).toBe(3); // Only 3 available
+  });
+
+  it('should reshuffle discard pile when draw pile is empty', () => {
+    const cards = createStartingDeck();
+    const discard = cards.slice(0, 14);
+    const draw = cards.slice(14); // 2 cards in draw
+    const result = drawCards([], draw, discard, 5);
+    expect(result.hand.length).toBe(5);
   });
 
   it('should handle drawing when both piles are empty', () => {
@@ -1190,7 +1189,7 @@ describe('Full turn cycle (integration)', () => {
     state = startNewPlayerTurn(state);
     expect(state.player.armor).toBe(0);
     expect(state.player.energy).toBe(3);
-    expect(state.hand.length).toBe(5);
+    expect(state.hand.length).toBe(4);
   });
 });
 

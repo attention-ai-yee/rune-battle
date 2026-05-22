@@ -1017,11 +1017,11 @@ export function processEnemyActions(state: GameState): GameState {
 }
 
 /** Maximum hand size (retained + newly drawn) */
-export const HAND_LIMIT = 10;
+export const HAND_LIMIT = 8;
 
 /** Get hand limit — retained cards + new draw cards, max HAND_LIMIT */
 export function getHandLimit(retainedCount: number): number {
-  return Math.min(HAND_LIMIT, retainedCount + 5);
+  return Math.min(HAND_LIMIT, retainedCount + 4);
 }
 
 /** Start a new player turn */
