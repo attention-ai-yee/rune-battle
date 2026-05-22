@@ -1016,12 +1016,12 @@ export function processEnemyActions(state: GameState): GameState {
   };
 }
 
-/** Maximum number of cards that can be retained per turn */
-export const MAX_RETAIN = 2;
+/** Maximum hand size (retained + newly drawn) */
+export const HAND_LIMIT = 10;
 
-/** Get hand limit based on retained cards (5 + retained, max 7) */
+/** Get hand limit — retained cards + new draw cards, max HAND_LIMIT */
 export function getHandLimit(retainedCount: number): number {
-  return Math.min(7, 5 + Math.min(retainedCount, MAX_RETAIN));
+  return Math.min(HAND_LIMIT, retainedCount + 5);
 }
 
 /** Start a new player turn */

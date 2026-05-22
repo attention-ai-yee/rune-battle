@@ -16,7 +16,7 @@ import {
   startNewPlayerTurn,
   drawCards,
   getHandLimit,
-  MAX_RETAIN,
+  HAND_LIMIT,
   resetIdCounter,
   applyCardEffect,
 } from '../utils/gameLogic';
@@ -107,16 +107,15 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
 
 /**
  * Simulates the endTurn logic from useGameState:
- * Separates retained (isRetained || retain) cards from non-retained cards,
- * moves retained to retainedCards, non-retained to discardPile.
+ * ALL unplayed cards are retained for next turn (enables combo planning).
+ * Non-retained cards are NOT discarded — they stay in retainedCards.
  */
 function simulateEndTurn(state: GameState): GameState {
-  const retainedCards = state.hand.filter(c => c.isRetained || c.retain);
-  const nonRetainedCards = state.hand.filter(c => !c.isRetained && !c.retain);
+  const retainedCards = state.hand.map(c => ({ ...c, isRetained: false }));
   return {
     ...state,
     hand: [],
-    discardPile: [...state.discardPile, ...nonRetainedCards],
+    discardPile: state.discardPile,
     retainedCards,
     isEnemyTurn: true,
     selectedCardId: null,
@@ -126,8 +125,7 @@ function simulateEndTurn(state: GameState): GameState {
 /**
  * Simulates the toggleRetain logic from useGameState:
  * - If card is already isRetained, unretain it
- * - Otherwise, check MAX_RETAIN limit and retain if under limit
- * - Both innate retain (retain=true) and manual retain (isRetained=true) count toward limit
+ * - Otherwise, retain it (no limit — all unplayed cards are auto-retained anyway)
  */
 function simulateToggleRetain(state: GameState, cardId: string): GameState {
   if (state.isEnemyTurn || state.screen !== 'battle') return state;
@@ -145,10 +143,7 @@ function simulateToggleRetain(state: GameState, cardId: string): GameState {
     };
   }
 
-  // Check retain limit (both auto-retain and manual retain count)
-  const retainedCount = state.hand.filter(c => c.isRetained || c.retain).length;
-  if (retainedCount >= MAX_RETAIN) return state; // Already at limit
-
+  // No limit — retain it (all unplayed cards auto-retain anyway)
   return {
     ...state,
     hand: state.hand.map(c =>
@@ -284,9 +279,9 @@ describe('📌 Retain - Card Data', () => {
 // 📌 MAX_RETAIN AND getHandLimit
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('📌 MAX_RETAIN and getHandLimit', () => {
-  it('MAX_RETAIN is 2', () => {
-    expect(MAX_RETAIN).toBe(2);
+describe('📌 HAND_LIMIT and getHandLimit', () => {
+  it('HAND_LIMIT is 10', () => {
+    expect(HAND_LIMIT).toBe(10);
   });
 
   it('getHandLimit(0) = 5 (base hand size)', () => {
@@ -297,30 +292,23 @@ describe('📌 MAX_RETAIN and getHandLimit', () => {
     expect(getHandLimit(1)).toBe(6);
   });
 
-  it('getHandLimit(2) = 7 (5 + 2 retained, capped at 7)', () => {
+  it('getHandLimit(2) = 7 (5 + 2 retained)', () => {
     expect(getHandLimit(2)).toBe(7);
   });
 
-  it('getHandLimit(3) = 7 (capped: min(7, 5 + min(3, 2)) = min(7, 7) = 7)', () => {
-    expect(getHandLimit(3)).toBe(7);
+  it('getHandLimit(5) = 10 (5 + 5 retained, capped at HAND_LIMIT=10)', () => {
+    expect(getHandLimit(5)).toBe(10);
   });
 
-  it('getHandLimit(10) = 7 (heavy cap test)', () => {
-    expect(getHandLimit(10)).toBe(7);
+  it('getHandLimit(10) = 10 (capped at HAND_LIMIT)', () => {
+    expect(getHandLimit(10)).toBe(10);
   });
 
-  it('getHandLimit with negative value computes mathematically (edge case)', () => {
-    // getHandLimit(-1) = Math.min(7, 5 + Math.min(-1, 2)) = Math.min(7, 4) = 4
-    // This is an edge case that shouldn't happen in practice
-    expect(getHandLimit(-1)).toBe(4);
-  });
-
-  it('getHandLimit formula: min(7, 5 + min(retainedCount, MAX_RETAIN))', () => {
-    // Verify the exact formula for multiple values
-    expect(getHandLimit(0)).toBe(Math.min(7, 5 + Math.min(0, 2))); // 5
-    expect(getHandLimit(1)).toBe(Math.min(7, 5 + Math.min(1, 2))); // 6
-    expect(getHandLimit(2)).toBe(Math.min(7, 5 + Math.min(2, 2))); // 7
-    expect(getHandLimit(5)).toBe(Math.min(7, 5 + Math.min(5, 2))); // 7
+  it('getHandLimit formula: min(10, retainedCount + 5)', () => {
+    expect(getHandLimit(0)).toBe(Math.min(10, 0 + 5)); // 5
+    expect(getHandLimit(3)).toBe(Math.min(10, 3 + 5)); // 8
+    expect(getHandLimit(5)).toBe(Math.min(10, 5 + 5)); // 10
+    expect(getHandLimit(7)).toBe(Math.min(10, 7 + 5)); // 10
   });
 });
 
@@ -344,12 +332,12 @@ describe('📌 Retained Cards Persist Between Turns', () => {
       discardPile: [],
     });
 
-    // End turn: retained card goes to retainedCards, other goes to discard
+    // End turn: ALL unplayed cards are retained (combo planning)
     state = simulateEndTurn(state);
-    expect(state.retainedCards).toHaveLength(1);
-    expect(state.retainedCards[0].instanceId).toBe('retain_card');
-    expect(state.discardPile).toHaveLength(1);
-    expect(state.discardPile[0].instanceId).toBe('other_card');
+    expect(state.retainedCards).toHaveLength(2); // Both cards retained
+    expect(state.retainedCards.find(c => c.instanceId === 'retain_card')).toBeDefined();
+    expect(state.retainedCards.find(c => c.instanceId === 'other_card')).toBeDefined();
+    expect(state.discardPile).toHaveLength(0); // Nothing discarded
     expect(state.hand).toHaveLength(0);
 
     // Start new player turn: retained cards restored, new cards drawn
@@ -359,8 +347,8 @@ describe('📌 Retained Cards Persist Between Turns', () => {
     // isRetained should be cleared
     const restoredCard = state.hand.find(c => c.instanceId === 'retain_card');
     expect(restoredCard!.isRetained).toBe(false);
-    // Should have drawn additional cards (handLimit = 6 for 1 retained card, draw 6-1=5)
-    expect(state.hand.length).toBe(6); // 1 retained + 5 drawn
+    // Should have drawn additional cards (handLimit = 7 for 2 retained cards, draw 7-2=5)
+    expect(state.hand.length).toBe(7); // 2 retained + 5 drawn
     // retainedCards should be cleared
     expect(state.retainedCards).toHaveLength(0);
   });
@@ -377,11 +365,11 @@ describe('📌 Retained Cards Persist Between Turns', () => {
       discardPile: [],
     });
 
-    // End turn: focus card has retain=true, so it gets retained
+    // End turn: ALL unplayed cards are retained (both focus and other)
     state = simulateEndTurn(state);
-    expect(state.retainedCards).toHaveLength(1);
-    expect(state.retainedCards[0].instanceId).toBe(focusCard.instanceId);
-    expect(state.discardPile).toHaveLength(1);
+    expect(state.retainedCards).toHaveLength(2); // Both cards retained
+    expect(state.retainedCards.find(c => c.instanceId === focusCard.instanceId)).toBeDefined();
+    expect(state.discardPile).toHaveLength(0);
 
     // Start new player turn
     state = startNewPlayerTurn(state);
@@ -393,7 +381,7 @@ describe('📌 Retained Cards Persist Between Turns', () => {
     expect(restoredFocus!.isRetained).toBe(false);
   });
 
-  it('non-retained card goes to discard pile on endTurn', () => {
+  it('unplayed card is retained on endTurn (new: all cards auto-retain)', () => {
     const normalCard = makeCard({ instanceId: 'normal' });
     const deck = createStartingDeck();
 
@@ -404,12 +392,12 @@ describe('📌 Retained Cards Persist Between Turns', () => {
     });
 
     state = simulateEndTurn(state);
-    expect(state.retainedCards).toHaveLength(0);
-    expect(state.discardPile).toHaveLength(1);
-    expect(state.discardPile[0].instanceId).toBe('normal');
+    expect(state.retainedCards).toHaveLength(1); // All unplayed cards retained
+    expect(state.retainedCards[0].instanceId).toBe('normal');
+    expect(state.discardPile).toHaveLength(0); // Nothing discarded
   });
 
-  it('multiple retained cards persist between turns', () => {
+  it('multiple cards persist between turns (all auto-retained)', () => {
     const retained1 = makeCard({ instanceId: 'r1', isRetained: true });
     const retained2 = makeCard({ instanceId: 'r2', retain: true });
     const normal = makeCard({ instanceId: 'normal' });
@@ -422,12 +410,12 @@ describe('📌 Retained Cards Persist Between Turns', () => {
     });
 
     state = simulateEndTurn(state);
-    expect(state.retainedCards).toHaveLength(2);
-    expect(state.discardPile).toHaveLength(1);
+    expect(state.retainedCards).toHaveLength(3); // All 3 cards retained
+    expect(state.discardPile).toHaveLength(0);
 
     state = startNewPlayerTurn(state);
-    // 2 retained + drawn cards; handLimit = getHandLimit(2) = 7, draw 7-2=5
-    expect(state.hand.length).toBe(7); // 2 retained + 5 drawn
+    // 3 retained + drawn cards; handLimit = getHandLimit(3) = 8, draw 8-3=5
+    expect(state.hand.length).toBe(8); // 3 retained + 5 drawn
   });
 
   it('retained card can be retained again in subsequent turns', () => {
@@ -475,8 +463,8 @@ describe('📌 Retained Cards Persist Between Turns', () => {
 // 📌 MAX_RETAIN LIMIT ENFORCEMENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe('📌 MAX_RETAIN Limit Enforcement', () => {
-  it('cannot manually retain more than MAX_RETAIN (2) cards', () => {
+describe('📌 No Retain Limit (all unplayed cards auto-retain)', () => {
+  it('can manually retain any number of cards (no limit)', () => {
     const card1 = makeCard({ instanceId: 'c1' });
     const card2 = makeCard({ instanceId: 'c2' });
     const card3 = makeCard({ instanceId: 'c3' });
@@ -491,12 +479,12 @@ describe('📌 MAX_RETAIN Limit Enforcement', () => {
     state = simulateToggleRetain(state, 'c2');
     expect(state.hand.find(c => c.instanceId === 'c2')!.isRetained).toBe(true);
 
-    // Try to retain third card - should be blocked
+    // Retain third card — no limit
     state = simulateToggleRetain(state, 'c3');
-    expect(state.hand.find(c => c.instanceId === 'c3')!.isRetained).toBe(false);
+    expect(state.hand.find(c => c.instanceId === 'c3')!.isRetained).toBe(true);
   });
 
-  it('innate retain cards count toward MAX_RETAIN limit', () => {
+  it('innate retain cards and manual retain cards coexist without limit', () => {
     const focusTemplate = CARD_TEMPLATES.find(t => t.id === 'focus')!;
     const bastionTemplate = CARD_TEMPLATES.find(t => t.id === 'bastion')!;
     const focusCard = createCardInstance(focusTemplate);
@@ -506,16 +494,12 @@ describe('📌 MAX_RETAIN Limit Enforcement', () => {
     // Hand: focus (retain=true), bastion (retain=true), normal card
     let state = makeState({ hand: [focusCard, bastionCard, normalCard] });
 
-    // Both innate retain cards count: retainedCount = 2 (focus.retain + bastion.retain)
-    const retainedCount = state.hand.filter(c => c.isRetained || c.retain).length;
-    expect(retainedCount).toBe(2);
-
-    // Cannot manually retain the normal card - at MAX_RETAIN
+    // Can manually retain the normal card too — no limit
     state = simulateToggleRetain(state, 'normal');
-    expect(state.hand.find(c => c.instanceId === 'normal')!.isRetained).toBe(false);
+    expect(state.hand.find(c => c.instanceId === 'normal')!.isRetained).toBe(true);
   });
 
-  it('one innate retain + one manual retain fills MAX_RETAIN', () => {
+  it('manual retain + innate retain all work together', () => {
     const focusTemplate = CARD_TEMPLATES.find(t => t.id === 'focus')!;
     const focusCard = createCardInstance(focusTemplate);
     const normal1 = makeCard({ instanceId: 'n1' });
@@ -527,33 +511,27 @@ describe('📌 MAX_RETAIN Limit Enforcement', () => {
     state = simulateToggleRetain(state, 'n1');
     expect(state.hand.find(c => c.instanceId === 'n1')!.isRetained).toBe(true);
 
-    // Now retainedCount = 2 (focus.retain + normal1.isRetained), can't retain n2
+    // Can also retain n2 — no limit
     state = simulateToggleRetain(state, 'n2');
-    expect(state.hand.find(c => c.instanceId === 'n2')!.isRetained).toBe(false);
+    expect(state.hand.find(c => c.instanceId === 'n2')!.isRetained).toBe(true);
   });
 
-  it('unretaining a card frees up a retain slot', () => {
+  it('unretaining a card works', () => {
     const card1 = makeCard({ instanceId: 'c1' });
     const card2 = makeCard({ instanceId: 'c2' });
-    const card3 = makeCard({ instanceId: 'c3' });
 
-    let state = makeState({ hand: [card1, card2, card3] });
+    let state = makeState({ hand: [card1, card2] });
 
     // Retain two cards
     state = simulateToggleRetain(state, 'c1');
     state = simulateToggleRetain(state, 'c2');
-
-    // Can't retain third
-    state = simulateToggleRetain(state, 'c3');
-    expect(state.hand.find(c => c.instanceId === 'c3')!.isRetained).toBe(false);
+    expect(state.hand.find(c => c.instanceId === 'c1')!.isRetained).toBe(true);
+    expect(state.hand.find(c => c.instanceId === 'c2')!.isRetained).toBe(true);
 
     // Unretain c1
     state = simulateToggleRetain(state, 'c1');
     expect(state.hand.find(c => c.instanceId === 'c1')!.isRetained).toBe(false);
-
-    // Now can retain c3
-    state = simulateToggleRetain(state, 'c3');
-    expect(state.hand.find(c => c.instanceId === 'c3')!.isRetained).toBe(true);
+    expect(state.hand.find(c => c.instanceId === 'c2')!.isRetained).toBe(true);
   });
 
   it('toggleRetain does nothing during enemy turn', () => {
@@ -591,14 +569,15 @@ describe('📌 Innate Retain + Manual Retain Coexistence', () => {
     });
 
     state = simulateEndTurn(state);
-    // focus card should be retained because c.retain is true
-    expect(state.retainedCards).toHaveLength(1);
-    expect(state.retainedCards[0].instanceId).toBe(focusCard.instanceId);
-    // normal card goes to discard
-    expect(state.discardPile).toHaveLength(1);
+    // All unplayed cards are auto-retained (including normal card)
+    expect(state.retainedCards).toHaveLength(2);
+    expect(state.retainedCards.find(c => c.instanceId === focusCard.instanceId)).toBeDefined();
+    expect(state.retainedCards.find(c => c.instanceId === 'normal')).toBeDefined();
+    // Nothing goes to discard
+    expect(state.discardPile).toHaveLength(0);
   });
 
-  it('innate retain card counts toward limit even without manual isRetained toggle', () => {
+  it('innate retain card is auto-retained along with all other cards', () => {
     const focusTemplate = CARD_TEMPLATES.find(t => t.id === 'focus')!;
     const focusCard = createCardInstance(focusTemplate);
     const normal1 = makeCard({ instanceId: 'n1' });
@@ -606,13 +585,12 @@ describe('📌 Innate Retain + Manual Retain Coexistence', () => {
 
     let state = makeState({ hand: [focusCard, normal1, normal2] });
 
-    // focus.retain=true counts as 1 retained; can manually retain only 1 more
+    // All cards can be manually retained (no limit)
     state = simulateToggleRetain(state, 'n1');
     expect(state.hand.find(c => c.instanceId === 'n1')!.isRetained).toBe(true);
 
-    // Can't retain n2 (already at MAX_RETAIN=2)
     state = simulateToggleRetain(state, 'n2');
-    expect(state.hand.find(c => c.instanceId === 'n2')!.isRetained).toBe(false);
+    expect(state.hand.find(c => c.instanceId === 'n2')!.isRetained).toBe(true);
   });
 
   it('manually retained card (isRetained=true) without retain field persists on endTurn', () => {
@@ -630,7 +608,7 @@ describe('📌 Innate Retain + Manual Retain Coexistence', () => {
     expect(state.retainedCards[0].instanceId).toBe('manual');
   });
 
-  it('both innate and manual retained cards persist together', () => {
+  it('all unplayed cards persist together (auto-retain)', () => {
     const focusTemplate = CARD_TEMPLATES.find(t => t.id === 'focus')!;
     const focusCard = createCardInstance(focusTemplate);
     const manualRetain = makeCard({ instanceId: 'manual', isRetained: true });
@@ -644,14 +622,15 @@ describe('📌 Innate Retain + Manual Retain Coexistence', () => {
     });
 
     state = simulateEndTurn(state);
-    expect(state.retainedCards).toHaveLength(2);
-    expect(state.discardPile).toHaveLength(1);
+    expect(state.retainedCards).toHaveLength(3); // All cards auto-retained
+    expect(state.discardPile).toHaveLength(0);
 
     state = startNewPlayerTurn(state);
-    // Both retained cards should be in hand
+    // All retained cards should be in hand
     expect(state.hand.some(c => c.instanceId === focusCard.instanceId)).toBe(true);
     expect(state.hand.some(c => c.instanceId === 'manual')).toBe(true);
-    // isRetained should be cleared for both
+    expect(state.hand.some(c => c.instanceId === 'normal')).toBe(true);
+    // isRetained should be cleared for all
     const restoredManual = state.hand.find(c => c.instanceId === 'manual');
     expect(restoredManual!.isRetained).toBe(false);
     // Focus retain field should still be true
@@ -690,10 +669,11 @@ describe('📌 Exhaust Takes Priority Over Retain', () => {
       discardPile: state.discardPile,
     };
 
-    // Now end turn - exhaust card is no longer in hand
+    // Now end turn - exhaust card is no longer in hand, normal card is retained
     state = simulateEndTurn(state);
-    expect(state.retainedCards).toHaveLength(0); // Exhaust card is gone
-    expect(state.discardPile).toHaveLength(1); // Only normal card
+    expect(state.retainedCards).toHaveLength(1); // normal card is retained (auto-retain)
+    expect(state.retainedCards[0].instanceId).toBe('normal');
+    expect(state.discardPile).toHaveLength(0); // Nothing discarded (auto-retain)
   });
 
   it('no current card has both exhaust=true and retain=true', () => {
@@ -873,10 +853,10 @@ describe('📌 Full Turn Cycle with Retain', () => {
       discardPile: [],
     });
 
-    // End turn
+    // End turn — ALL unplayed cards are retained
     state = simulateEndTurn(state);
-    expect(state.retainedCards).toHaveLength(2); // focus + manual
-    expect(state.discardPile).toHaveLength(1); // normal
+    expect(state.retainedCards).toHaveLength(3); // All 3 cards retained
+    expect(state.discardPile).toHaveLength(0); // Nothing discarded
     expect(state.isEnemyTurn).toBe(true);
 
     // Start new player turn (simulating after enemy turn)
@@ -884,9 +864,10 @@ describe('📌 Full Turn Cycle with Retain', () => {
     expect(state.isEnemyTurn).toBe(false);
     expect(state.retainedCards).toHaveLength(0);
 
-    // Both retained cards should be in hand
+    // All 3 retained cards should be in hand
     expect(state.hand.some(c => c.instanceId === focusCard.instanceId)).toBe(true);
     expect(state.hand.some(c => c.instanceId === 'manual_retain')).toBe(true);
+    expect(state.hand.some(c => c.instanceId === 'normal_card')).toBe(true);
 
     // isRetained should be cleared
     const restoredManual = state.hand.find(c => c.instanceId === 'manual_retain');
@@ -895,9 +876,9 @@ describe('📌 Full Turn Cycle with Retain', () => {
     const restoredFocus = state.hand.find(c => c.instanceId === focusCard.instanceId);
     expect(restoredFocus!.retain).toBe(true);
 
-    // Hand should have: 2 retained + drawn cards
-    // handLimit = getHandLimit(2) = 7, cardsToDraw = 7 - 2 = 5
-    expect(state.hand.length).toBe(7);
+    // Hand should have: 3 retained + drawn cards
+    // handLimit = getHandLimit(3) = 8, cardsToDraw = 8 - 3 = 5
+    expect(state.hand.length).toBe(8);
   });
 
   it('focus card persists across multiple turns', () => {
@@ -938,30 +919,29 @@ describe('📌 Full Turn Cycle with Retain', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('📌 Retain Edge Cases', () => {
-  it('retaining a card and then playing it removes it from hand (not retained on endTurn)', () => {
-    // A manually retained card that gets played should not be retained on endTurn
-    // because it's no longer in hand
-    const retainedCard = makeCard({ instanceId: 'retained', isRetained: true });
+  it('playing a card removes it from hand (not retained on endTurn)', () => {
+    // A card that gets played should not be retained on endTurn because it's no longer in hand
+    const playedCard = makeCard({ instanceId: 'played' });
     const normalCard = makeCard({ instanceId: 'normal' });
     const deck = createStartingDeck();
 
     let state = makeState({
-      hand: [retainedCard, normalCard],
+      hand: [playedCard, normalCard],
       drawPile: deck,
       discardPile: [],
     });
 
-    // Player plays the retained card (removes from hand, adds to discard)
+    // Player plays the card (removes from hand, adds to discard)
     state = {
       ...state,
-      hand: state.hand.filter(c => c.instanceId !== 'retained'),
-      discardPile: [...state.discardPile, retainedCard],
+      hand: state.hand.filter(c => c.instanceId !== 'played'),
+      discardPile: [...state.discardPile, playedCard],
     };
 
-    // End turn
+    // End turn — remaining hand cards are retained
     state = simulateEndTurn(state);
-    // The played card is already in discardPile, not in retainedCards
-    expect(state.retainedCards).toHaveLength(0);
+    expect(state.retainedCards).toHaveLength(1); // normal card retained
+    expect(state.retainedCards[0].instanceId).toBe('normal');
   });
 
   it('innate retain card played is not retained (goes to discard)', () => {
@@ -981,7 +961,7 @@ describe('📌 Retain Edge Cases', () => {
       discardPile: [...state.discardPile, focusCard],
     };
 
-    // End turn - focus is in discard, not in hand
+    // End turn - empty hand → no retained cards
     state = simulateEndTurn(state);
     expect(state.retainedCards).toHaveLength(0);
     expect(state.discardPile.some(c => c.instanceId === focusCard.instanceId)).toBe(true);

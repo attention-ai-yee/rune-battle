@@ -264,20 +264,14 @@ export function useGameState() {
     setState(prev => {
       if (prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
-      // Clear temporary strength buffs (e.g. rage_mode)
-      const hadTemporaryStrength = prev.hand.some(c => c.effect.temporary && c.effect.type === 'strength');
-      // Note: temporary strength is tracked separately; we reset it via the playerStrength field
-      // For simplicity: reduce playerStrength by the sum of all temporary strength cards that were played
-      // This is handled by tracking temporaryStrength in GameState (not yet implemented, handled conservatively)
-
-      // Separate retained and non-retained cards
-      const retainedCards = prev.hand.filter(c => c.isRetained || c.retain);
-      const nonRetainedCards = prev.hand.filter(c => !c.isRetained && !c.retain);
+      // Unplayed cards are retained for next turn (enables combo planning)
+      // Reset isRetained flag since they'll be automatically kept
+      const retainedCards = prev.hand.map(c => ({ ...c, isRetained: false }));
 
       return {
         ...prev,
         hand: [],
-        discardPile: [...prev.discardPile, ...nonRetainedCards],
+        discardPile: prev.discardPile,
         retainedCards,
         isEnemyTurn: true,
         selectedCardId: null,
@@ -304,10 +298,8 @@ export function useGameState() {
         };
       }
 
-      // Check retain limit (both auto-retain and manual retain count)
-      const retainedCount = prev.hand.filter(c => c.isRetained || c.retain).length;
-      if (retainedCount >= MAX_RETAIN) return prev; // Already at limit
-
+      // Mark as retained (no limit — all unplayed cards are retained anyway,
+      // this just adds a visual indicator for the player)
       return {
         ...prev,
         hand: prev.hand.map(c =>
