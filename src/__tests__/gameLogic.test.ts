@@ -1278,7 +1278,9 @@ describe('Card data integrity', () => {
       if (template.effect.type === 'attack' || template.effect.type === 'multiAttack' || template.effect.type === 'attackAll') {
         // shield_bash uses armorAsDamage with damage: 0 base
         // toxic_burst uses poisonScaleDamage with damage: 0 base
-        const hasDamage = (template.effect.damage ?? 0) > 0 || template.effect.armorAsDamage || template.effect.poisonScaleDamage;
+        // burn_detonate uses burnScaleDamage with damage: 0 base
+        // combo_strike uses cardsPlayedScaleMultiplier with damage: 2 base
+        const hasDamage = (template.effect.damage ?? 0) > 0 || template.effect.armorAsDamage || template.effect.poisonScaleDamage || template.effect.burnScaleDamage || template.effect.cardsPlayedScaleMultiplier;
         expect(hasDamage).toBe(true);
       }
       if (template.effect.type === 'aoeAttack') {

@@ -46,6 +46,29 @@ export interface CardEffect {
   discardOldest?: boolean;
   /** Number of oldest cards to discard (for discard_draw+, default 1 when discardOldest is true) */
   discardCount?: number;
+  /** Scale damage by target's burn stacks × this multiplier (for burn_detonate combo) */
+  burnScaleDamage?: boolean;
+  /** Multiplier for burn-scaled damage (default 4) */
+  burnMultiplier?: number;
+  /** Bonus damage per poison stack on target (for corrode combo) */
+  poisonBonusPerStack?: number;
+  /** Double damage if player strength >= this threshold (for skull_crusher combo) */
+  strengthThreshold?: number;
+  /** Multiply damage by cards played this turn × this value (for combo_strike combo) */
+  cardsPlayedScaleMultiplier?: number;
+  /** This card costs 0 if player armor >= this value (for armor_engine combo) */
+  freeIfArmorAbove?: number;
+  /** Bonus damage if target has burn status (for ember_dance combo) */
+  burnBonusIfBurning?: number;
+  /** Bonus draw if hand size is above this threshold (for mind_surge combo) */
+  bonusDrawIfHandAbove?: number;
+  /** Bonus strength per attack card played this turn (for war_frenzy combo).
+   *  Uses cardsPlayedThisTurn as approximation */
+  bonusStrengthPerAttack?: number;
+  /** Gain this much strength at the start of next turn (for iron_focus combo) */
+  nextTurnStrength?: number;
+  /** Apply status effects (poison/burn/freeze) on every hit instead of just the first (for venom_blade_dance) */
+  applyStatusPerHit?: boolean;
 }
 
 /** Card template - defines a card blueprint */
@@ -190,6 +213,10 @@ export interface GameState {
   lastPlayedCard: CardInstance | null;
   /** Cards exhausted during current battle (recovered when battle ends) */
   exhaustedPile: CardInstance[];
+  /** Number of cards played this turn (resets each turn) */
+  cardsPlayedThisTurn: number;
+  /** Strength to gain at the start of next turn (for iron_focus combo) */
+  pendingStrength: number;
 }
 
 /** Floating damage number for visual feedback */

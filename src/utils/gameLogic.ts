@@ -352,19 +352,43 @@ export function applyCardEffect(
       const enemy = { ...newState.enemies[targetEnemyIndex] };
       const burnStacks = getBurnStacks(enemy.statusEffects);
 
-      // Calculate damage: poison-scale, armor-as-damage, hand-scaled, or fixed
+      // Calculate damage: various scaling conditions
       let totalDamage: number;
       if (effect.poisonScaleDamage) {
         // toxic_burst: damage = target's poison stacks × multiplier (default 3, upgraded to 5)
         const poisonStacks = getPoisonStacks(enemy.statusEffects);
         const multiplier = effect.poisonMultiplier ?? 3;
         totalDamage = poisonStacks * multiplier + playerStrength;
+      } else if (effect.burnScaleDamage) {
+        // burn_detonate: damage = target's burn stacks × multiplier (default 4, upgraded to 6)
+        const burnStacksCount = getBurnStacks(enemy.statusEffects);
+        const multiplier = effect.burnMultiplier ?? 4;
+        totalDamage = burnStacksCount * multiplier + playerStrength;
       } else if (effect.armorAsDamage) {
         totalDamage = state.player.armor + (effect.damage ?? 0) + playerStrength;
       } else if (effect.handScaleMultiplier) {
         totalDamage = state.hand.length * effect.handScaleMultiplier + playerStrength;
+      } else if (effect.cardsPlayedScaleMultiplier) {
+        // combo_strike: damage = cards played this turn × multiplier
+        totalDamage = (state.cardsPlayedThisTurn ?? 0) * effect.cardsPlayedScaleMultiplier + (effect.damage ?? 0) + playerStrength;
       } else {
         totalDamage = (effect.damage ?? 0) + playerStrength;
+      }
+
+      // Combo: bonus damage per poison stack on target (corrode)
+      if (effect.poisonBonusPerStack) {
+        const poisonStacks = getPoisonStacks(enemy.statusEffects);
+        totalDamage += poisonStacks * effect.poisonBonusPerStack;
+      }
+
+      // Combo: double damage if strength >= threshold (skull_crusher)
+      if (effect.strengthThreshold && playerStrength >= effect.strengthThreshold) {
+        totalDamage *= 2;
+      }
+
+      // Combo: bonus damage if target has burn (ember_dance)
+      if (effect.burnBonusIfBurning && burnStacks > 0) {
+        totalDamage += effect.burnBonusIfBurning;
       }
 
       // Piercing: bypass armor completely
@@ -397,6 +421,11 @@ export function applyCardEffect(
       // Apply weaken from attack cards (e.g. crippling_blow)
       if (effect.weakenAmount) {
         enemy.strength = Math.max(0, enemy.strength - effect.weakenAmount);
+      }
+
+      // Combo: burn detonate — consume burn stacks after dealing damage
+      if (effect.burnScaleDamage) {
+        enemy.statusEffects = enemy.statusEffects.filter(s => s.type !== 'burn');
       }
 
       newState.enemies = [...newState.enemies];
@@ -505,6 +534,11 @@ export function applyCardEffect(
           }
         }
         newState.enemies = enemies;
+      }
+
+      // Combo: next turn strength (iron_focus)
+      if (effect.nextTurnStrength) {
+        newState.pendingStrength = (newState.pendingStrength ?? 0) + effect.nextTurnStrength;
       }
       break;
     }
@@ -632,8 +666,9 @@ export function applyCardEffect(
         enemy.armor = result.newArmor;
         enemy.isHit = true;
 
-        // Apply status effects from card on first hit only
-        if (h === 0) {
+        // Apply status effects (first hit only, unless applyStatusPerHit like venom_blade_dance)
+        const shouldApplyStatus = h === 0 || effect.applyStatusPerHit;
+        if (shouldApplyStatus) {
           if (effect.poison) {
             enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'poison', value: effect.poison });
           }
@@ -715,6 +750,14 @@ export function applyCardEffect(
       const strengthGain = effect.strengthGain ?? 0;
       const hpCost = effect.hpCost ?? 0;
       newState.playerStrength = (newState.playerStrength ?? 0) + strengthGain;
+      // Combo: bonus strength per card played this turn (war_frenzy)
+      if (effect.bonusStrengthPerAttack) {
+        newState.playerStrength += (newState.cardsPlayedThisTurn ?? 0) * effect.bonusStrengthPerAttack;
+      }
+      // Combo: strength gained next turn (iron_focus)
+      if (effect.nextTurnStrength) {
+        newState.pendingStrength = (newState.pendingStrength ?? 0) + effect.nextTurnStrength;
+      }
       if (hpCost > 0) {
         newState.player = {
           ...newState.player,
@@ -964,6 +1007,10 @@ export function startNewPlayerTurn(state: GameState): GameState {
     cardsToDraw
   );
 
+  // Apply pending strength from previous turn (e.g. iron_focus)
+  const pendingStr = state.pendingStrength ?? 0;
+  const newPlayerStrength = (state.playerStrength ?? 0) + pendingStr;
+
   return {
     ...state,
     player,
@@ -977,6 +1024,9 @@ export function startNewPlayerTurn(state: GameState): GameState {
     animatingCardIds: [],
     turnNumber: state.turnNumber + 1,
     lastPlayedCard: null,
+    cardsPlayedThisTurn: 0,
+    playerStrength: newPlayerStrength,
+    pendingStrength: 0,
   };
 }
 
@@ -1012,13 +1062,21 @@ export function createInitialState(): GameState {
     rewardChoices: [],
     lastPlayedCard: null,
     exhaustedPile: [],
+    cardsPlayedThisTurn: 0,
+    pendingStrength: 0,
   };
 }
 
 /** Check if a card can be played */
 export function canPlayCard(card: CardInstance, state: GameState): boolean {
   if (state.isEnemyTurn) return false;
-  if (card.cost > state.player.energy) return false;
+
+  // Combo: card is free if armor is above threshold
+  const effectiveCost = (card.effect.freeIfArmorAbove && state.player.armor >= card.effect.freeIfArmorAbove)
+    ? 0
+    : card.cost;
+
+  if (effectiveCost > state.player.energy) return false;
   if (state.animatingCardIds.includes(card.instanceId)) return false;
 
   // Attack cards need at least one enemy

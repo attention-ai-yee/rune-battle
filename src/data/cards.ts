@@ -528,6 +528,111 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     effect: { type: 'draw', drawCount: 1, discardOldest: true },
     rarity: 'common',
   },
+
+  // === Combo Chain Cards ===
+  // 每张卡都依赖某个已有体系的状态，与其他卡形成连锁
+
+  // -- 灼烧连锁：灼烧叠层 → 引爆爆发 --
+  {
+    id: 'burn_detonate',
+    name: '烈焰引爆',
+    type: 'attack',
+    cost: 2,
+    description: '引爆：对目标造成其灼烧层数×4的伤害，然后清除灼烧',
+    effect: { type: 'attack', damage: 0, burnScaleDamage: true, burnMultiplier: 4 },
+    rarity: 'rare',
+  },
+  {
+    id: 'ember_dance',
+    name: '炎舞',
+    type: 'attack',
+    cost: 1,
+    description: '造成4点伤害，若目标有灼烧则再造成6点额外伤害',
+    effect: { type: 'attack', damage: 4, burnBonusIfBurning: 6 },
+    rarity: 'common',
+  },
+
+  // -- 毒连锁：上毒 → 按毒层增伤 → 爆发 --
+  {
+    id: 'corrode',
+    name: '毒蚀',
+    type: 'attack',
+    cost: 1,
+    description: '造成3点伤害，目标每有1层中毒额外+2伤害',
+    effect: { type: 'attack', damage: 3, poisonBonusPerStack: 2 },
+    rarity: 'common',
+  },
+
+  // -- 护甲连锁：叠甲 → 护甲增伤/0费出牌 --
+  {
+    id: 'armor_engine',
+    name: '坚守待发',
+    type: 'spell',
+    cost: 2,
+    description: '获得8点护甲，抽2张牌。若护甲≥10则此牌0费',
+    effect: { type: 'defend', armor: 8, drawCards: 2, freeIfArmorAbove: 10 },
+    rarity: 'rare',
+  },
+
+  // -- 手牌连锁：多出牌 → 牌越多伤害越高 --
+  {
+    id: 'combo_strike',
+    name: '连绵不绝',
+    type: 'attack',
+    cost: 1,
+    description: '造成2点伤害，本回合每打出1张牌+2伤害',
+    effect: { type: 'attack', damage: 2, cardsPlayedScaleMultiplier: 2 },
+    rarity: 'common',
+  },
+  {
+    id: 'mind_surge',
+    name: '思绪如潮',
+    type: 'spell',
+    cost: 1,
+    description: '抽2张牌，若手牌≥5张则再抽1张',
+    effect: { type: 'draw', drawCount: 2, bonusDrawIfHandAbove: 4 },
+    rarity: 'rare',
+  },
+
+  // -- 力量连锁：叠力量 → 高力量时爆发 --
+  {
+    id: 'skull_crusher',
+    name: '碎颅',
+    type: 'attack',
+    cost: 2,
+    description: '造成10点伤害，若力量≥5则伤害翻倍',
+    effect: { type: 'attack', damage: 10, strengthThreshold: 5 },
+    rarity: 'rare',
+  },
+
+  // -- 跨体系连锁：混合条件 --
+  {
+    id: 'war_frenzy',
+    name: '战意',
+    type: 'spell',
+    cost: 1,
+    description: '获得1点力量。本回合每打出1张牌再+1力量',
+    effect: { type: 'strength', strengthGain: 1, bonusStrengthPerAttack: 1 },
+    rarity: 'rare',
+  },
+  {
+    id: 'venom_blade_dance',
+    name: '毒刃乱舞',
+    type: 'attack',
+    cost: 2,
+    description: '造成2点伤害×3次，每次命中施加2层中毒',
+    effect: { type: 'multiHit', damage: 2, hits: 3, poison: 2, applyStatusPerHit: true },
+    rarity: 'rare',
+  },
+  {
+    id: 'iron_focus',
+    name: '铁壁蓄力',
+    type: 'defense',
+    cost: 1,
+    description: '获得5点护甲，下回合获得1点力量',
+    effect: { type: 'defend', armor: 5, nextTurnStrength: 1 },
+    rarity: 'rare',
+  },
 ];
 
 /** Card upgrade definitions: maps templateId to upgraded card properties */
@@ -588,6 +693,17 @@ export const CARD_UPGRADES: Record<string, { name: string; description: string; 
   contagion: { name: '传染+', description: '对所有敌人施加6层中毒', effect: { poison: 6 } },
   rage_mode: { name: '狂怒状态+', description: '本回合力量+6，回合结束后清除（消耗）', effect: { strengthGain: 6 } },
   discard_draw: { name: '换牌+', description: '弃掉手中2张最旧的牌，抽2张新牌', effect: { drawCount: 2, discardOldest: true, discardCount: 2 } },
+  // === Combo Chain Card Upgrades ===
+  burn_detonate: { name: '烈焰引爆+', description: '引爆：对目标造成其灼烧层数×6的伤害，然后清除灼烧', effect: { burnMultiplier: 6 } },
+  ember_dance: { name: '炎舞+', description: '造成7点伤害，若目标有灼烧则再造成9点额外伤害', effect: { damage: 7, burnBonusIfBurning: 9 } },
+  corrode: { name: '毒蚀+', description: '造成5点伤害，目标每有1层中毒额外+3伤害', effect: { damage: 5, poisonBonusPerStack: 3 } },
+  armor_engine: { name: '坚守待发+', description: '获得11点护甲，抽2张牌。若护甲≥10则此牌0费', effect: { armor: 11 } },
+  combo_strike: { name: '连绵不绝+', description: '造成3点伤害，本回合每打出1张牌+3伤害', effect: { damage: 3, cardsPlayedScaleMultiplier: 3 } },
+  mind_surge: { name: '思绪如潮+', description: '抽3张牌，若手牌≥5张则再抽1张', effect: { drawCount: 3 } },
+  skull_crusher: { name: '碎颅+', description: '造成14点伤害，若力量≥5则伤害翻倍', effect: { damage: 14 } },
+  war_frenzy: { name: '战意+', description: '获得2点力量。本回合每打出1张牌再+1力量', effect: { strengthGain: 2 } },
+  venom_blade_dance: { name: '毒刃乱舞+', description: '造成3点伤害×3次，每次命中施加3层中毒', effect: { damage: 3, poison: 3 } },
+  iron_focus: { name: '铁壁蓄力+', description: '获得8点护甲，下回合获得2点力量', effect: { armor: 8, nextTurnStrength: 2 } },
 };
 
 /** Starting deck composition: templateId → count */

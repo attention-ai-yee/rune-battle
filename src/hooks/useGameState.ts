@@ -145,6 +145,8 @@ export function useGameState() {
         rewardChoices: [],
         lastPlayedCard: null,
         exhaustedPile: [],
+        cardsPlayedThisTurn: 0,
+        pendingStrength: 0,
       };
 
       return initialState;
@@ -206,6 +208,8 @@ export function useGameState() {
         rewardChoices: [],
         lastPlayedCard: null,
         exhaustedPile: [], // 战斗开始时清空消耗牌堆
+        cardsPlayedThisTurn: 0,
+        pendingStrength: 0,
       };
 
       return battleState;
@@ -476,6 +480,8 @@ export function useGameState() {
       drawPile: [...prev.drawPile, ...exhaustedCards], // Recover exhausted cards
       discardPile: prev.discardPile,
       exhaustedPile: [], // Clear exhausted pile
+      cardsPlayedThisTurn: 0,
+      pendingStrength: 0,
       retainedCards: [],
       mapLayers,
       isEnemyTurn: false,
@@ -531,8 +537,11 @@ function playCardOnState(
   card: CardInstance,
   targetEnemyIndex?: number
 ): GameState {
-  // Deduct energy
-  const player = { ...state.player, energy: state.player.energy - card.cost };
+  // Deduct energy (combo: free if armor above threshold)
+  const effectiveCost = (card.effect.freeIfArmorAbove && state.player.armor >= card.effect.freeIfArmorAbove)
+    ? 0
+    : card.cost;
+  const player = { ...state.player, energy: state.player.energy - effectiveCost };
 
   // Play sound based on card type
   const effectType = card.effect.type;
@@ -586,6 +595,14 @@ function playCardOnState(
     finalDiscardPile = drawn.discardPile;
   }
 
+  // Combo: bonus draw if hand size above threshold (mind_surge)
+  if (card.effect.bonusDrawIfHandAbove && finalHand.length > card.effect.bonusDrawIfHandAbove) {
+    const bonusDrawn = drawCards(finalHand, finalDrawPile, finalDiscardPile, 1);
+    finalHand = bonusDrawn.hand;
+    finalDrawPile = bonusDrawn.drawPile;
+    finalDiscardPile = bonusDrawn.discardPile;
+  }
+
   // Handle doubleArmor (壕沟)
   let finalPlayer = afterEffect.player;
   if (card.effect.doubleArmor) {
@@ -605,6 +622,7 @@ function playCardOnState(
       drawPile: finalDrawPile,
       discardPile: finalDiscardPile,
       exhaustedPile,
+      cardsPlayedThisTurn: (afterEffect.cardsPlayedThisTurn ?? 0) + 1,
       enemies: [],
       selectedCardId: null,
       screen: 'battleWin',
@@ -620,6 +638,7 @@ function playCardOnState(
     drawPile: finalDrawPile,
     discardPile: finalDiscardPile,
     exhaustedPile,
+    cardsPlayedThisTurn: (afterEffect.cardsPlayedThisTurn ?? 0) + 1,
     selectedCardId: null,
     lastPlayedCard: card,
   };
