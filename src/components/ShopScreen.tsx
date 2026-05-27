@@ -15,14 +15,14 @@ interface ShopScreenProps {
 export function generateShopState(gold: number): ShopState {
   const templates = getRandomCardRewardTemplates(3);
   const cardOffers = templates.map(t => {
-    const price = t.rarity === 'common' ? 50 : t.rarity === 'rare' ? 80 : 120;
+    const price = t.rarity === 'common' ? 30 : t.rarity === 'rare' ? 50 : 80;
     return { template: t, price };
   });
 
   return {
     cardOffers,
-    removeCardPrice: 60,
-    healPrice: 40,
+    removeCardPrice: 40,
+    healPrice: 25,
     healAmount: Math.floor(70 * 0.25), // 25% of max HP
     gold,
   };

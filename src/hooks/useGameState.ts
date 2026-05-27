@@ -690,8 +690,8 @@ export function useGameState() {
         }
       }
       const goldReward = isElite
-        ? 60 + Math.floor(Math.random() * 21) // 60-80
-        : 30 + Math.floor(Math.random() * 21); // 30-50
+        ? 80 + Math.floor(Math.random() * 21) // 80-100
+        : 40 + Math.floor(Math.random() * 21); // 40-60
 
       // Roll card rewards
       const deckTemplateIds = new Set([
