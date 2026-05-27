@@ -262,6 +262,8 @@ export function useGameState() {
             ...prev,
             screen: 'shop' as const,
             shopState: null, // ShopScreen will generate its own state
+            currentBattleLayer: layerIndex,
+            currentBattleNode: colIndex * 10 + nodeIndex,
           };
         }
 
@@ -272,6 +274,8 @@ export function useGameState() {
             ...prev,
             screen: 'event' as const,
             eventState: eventData,
+            currentBattleLayer: layerIndex,
+            currentBattleNode: colIndex * 10 + nodeIndex,
           };
         }
 
