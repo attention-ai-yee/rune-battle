@@ -1214,13 +1214,23 @@ export function cardNeedsTarget(card: CardInstance): boolean {
 }
 
 /** Check if all battle nodes in a layer are defeated (non-battle nodes don't block progress) */
-export function isLayerComplete(layer: { nodes: { type?: string; defeated: boolean; visited?: boolean }[] }): boolean {
+export function isLayerComplete(layer: { nodes: { type?: string; defeated: boolean; visited?: boolean }[]; columns?: { type?: string; defeated: boolean; visited?: boolean }[][] }): boolean {
+  // If layer has columns (branching map), check that each column has at least one completed node
+  if (layer.columns && layer.columns.length > 0) {
+    return layer.columns.every(col =>
+      col.some(n => {
+        if (n.type === 'shop' || n.type === 'event' || n.type === 'rest') {
+          return n.visited === true;
+        }
+        return n.defeated;
+      })
+    );
+  }
+  // Fallback: flat nodes (all must be done)
   return layer.nodes.every(n => {
-    // For shop/event/rest nodes, just check visited
     if (n.type === 'shop' || n.type === 'event' || n.type === 'rest') {
       return n.visited === true;
     }
-    // For battle/elite nodes, check defeated
     return n.defeated;
   });
 }
