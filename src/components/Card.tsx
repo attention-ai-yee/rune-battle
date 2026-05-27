@@ -18,13 +18,14 @@ interface CardProps {
 }
 
 /** Card type to color mapping */
-const CARD_TYPE_COLORS: Record<string, { border: string; glow: string; bg: string; text: string; badge: string }> = {
+const CARD_TYPE_COLORS: Record<string, { border: string; glow: string; bg: string; text: string; badge: string; artBg: string }> = {
   attack: {
     border: 'border-rune-red/60',
     glow: 'card-glow-red',
     bg: 'bg-gradient-to-b from-red-950/80 to-rune-card',
     text: 'text-rune-red',
     badge: 'bg-rune-red/20 text-rune-red',
+    artBg: 'bg-gradient-to-br from-red-900/60 via-red-950/40 to-transparent',
   },
   defense: {
     border: 'border-rune-blue/60',
@@ -32,6 +33,7 @@ const CARD_TYPE_COLORS: Record<string, { border: string; glow: string; bg: strin
     bg: 'bg-gradient-to-b from-blue-950/80 to-rune-card',
     text: 'text-rune-blue',
     badge: 'bg-rune-blue/20 text-rune-blue',
+    artBg: 'bg-gradient-to-br from-blue-900/60 via-blue-950/40 to-transparent',
   },
   spell: {
     border: 'border-rune-purple/60',
@@ -39,6 +41,7 @@ const CARD_TYPE_COLORS: Record<string, { border: string; glow: string; bg: strin
     bg: 'bg-gradient-to-b from-purple-950/80 to-rune-card',
     text: 'text-rune-purple',
     badge: 'bg-rune-purple/20 text-rune-purple',
+    artBg: 'bg-gradient-to-br from-purple-900/60 via-purple-950/40 to-transparent',
   },
 };
 
@@ -144,6 +147,10 @@ const Card: React.FC<CardProps> = ({
   // Retain visual: cyan glow for retained cards
   const retainGlow = isRetained ? 'ring-1 ring-cyan-400/50' : '';
 
+  // Epic cards get animated border
+  const isEpic = card.rarity === 'epic';
+  const epicBorder = isEpic ? 'animate-border-epic' : '';
+
   return (
     <div
       onClick={handleClick}
@@ -152,8 +159,8 @@ const Card: React.FC<CardProps> = ({
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
       className={`
-        relative rounded-lg border-2
-        ${borderClass} ${colors.bg} ${glowClass}
+        relative rounded-lg border-2 ring-1 ring-white/5
+        ${borderClass} ${colors.bg} ${glowClass} ${epicBorder}
         transition-all duration-200 ease-out
         flex flex-col p-1.5 sm:p-2 cursor-pointer touch-target
         /* Desktop: 120x168, Mobile: 76x106 */
@@ -166,6 +173,9 @@ const Card: React.FC<CardProps> = ({
         ${showUpgradePreview ? 'scale-105 ring-2 ring-amber-400/60' : ''}
       `}
     >
+      {/* Holo gradient overlay - subtle shimmer at top */}
+      <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-white/5 to-transparent rounded-t-lg pointer-events-none" />
+
       {/* Cost badge */}
       <div className="absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-rune-dark border-2 border-rune-gold flex items-center justify-center z-10">
         <span className="text-rune-gold text-[12px] sm:text-base font-bold">{card.cost}</span>
@@ -182,13 +192,24 @@ const Card: React.FC<CardProps> = ({
       )}
 
       {/* Card name with upgrade indicator */}
-      <div className={`text-center text-[12px] sm:text-base font-bold mt-1 sm:mt-2 ${colors.text} drop-shadow-md`}>
+      <div className={`text-center text-[12px] sm:text-base font-bold mt-1 sm:mt-2 ${colors.text} drop-shadow-md fantasy-text`}>
         {card.name}
         {card.upgraded && <span className="text-amber-400 text-[9px] sm:text-xs ml-0.5">+</span>}
       </div>
 
       {/* Divider */}
       <div className={`mx-auto w-3/4 h-px my-0.5 sm:my-1.5 ${colors.border.replace('border-', 'bg-')}`}></div>
+
+      {/* Card art area */}
+      <div className={`relative h-[28px] sm:h-[40px] mx-1 rounded overflow-hidden ${colors.artBg}`}>
+        <div className="absolute inset-0 flex items-center justify-center text-lg sm:text-2xl opacity-60">
+          {icon}
+        </div>
+        {/* Shimmer effect for rare/epic */}
+        {card.rarity !== 'common' && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+        )}
+      </div>
 
       {/* Description */}
       <div className="flex-1 flex items-center justify-center">

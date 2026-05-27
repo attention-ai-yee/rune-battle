@@ -37,6 +37,10 @@ export default {
         'float-up-blue': 'floatUpBlue 0.8s ease-out forwards',
         'float-up-purple': 'floatUpPurple 0.8s ease-out forwards',
         'card-play-anim': 'cardPlay 0.4s ease-out forwards',
+        'shimmer': 'shimmer 3s ease-in-out infinite',
+        'spin-slow': 'spin 8s linear infinite',
+        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'border-epic': 'borderEpic 3s ease-in-out infinite',
       },
       keyframes: {
         cardPlay: {
@@ -119,6 +123,19 @@ export default {
           '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
           '40%': { opacity: '1', transform: 'translateY(-10px) scale(1.1)' },
           '100%': { opacity: '0', transform: 'translateY(-35px) scale(0.7)' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { boxShadow: '0 0 8px rgba(212,164,76,0.3), 0 0 20px rgba(212,164,76,0.1)' },
+          '50%': { boxShadow: '0 0 16px rgba(212,164,76,0.6), 0 0 32px rgba(212,164,76,0.3)' },
+        },
+        borderEpic: {
+          '0%, 100%': { borderColor: 'rgba(251,191,36,0.5)', boxShadow: '0 0 8px rgba(251,191,36,0.2), inset 0 0 8px rgba(251,191,36,0.05)' },
+          '33%': { borderColor: 'rgba(168,85,247,0.5)', boxShadow: '0 0 8px rgba(168,85,247,0.2), inset 0 0 8px rgba(168,85,247,0.05)' },
+          '66%': { borderColor: 'rgba(239,68,68,0.5)', boxShadow: '0 0 8px rgba(239,68,68,0.2), inset 0 0 8px rgba(239,68,68,0.05)' },
         },
       },
     },

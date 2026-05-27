@@ -110,13 +110,20 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
       className={`
         relative flex flex-col items-center p-3 sm:p-4 rounded-xl
         bg-gradient-to-b from-gray-800/60 to-gray-900/80
-        border-2 transition-all duration-300 touch-target
+        border-2 transition-all duration-300 touch-target overflow-hidden
         ${enemy.isHit ? 'animate-enemy-hit border-rune-red brightness-125' : 'border-gray-700/50'}
         ${isTargetable ? 'cursor-pointer hover:border-rune-gold hover:bg-gray-800/80 active:bg-gray-700/80 active:scale-95' : ''}
         ${isSelected ? 'border-rune-gold ring-2 ring-rune-gold/50 bg-gray-800/80' : ''}
         ${!isTargetable ? 'cursor-default' : ''}
       `}
     >
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+        backgroundImage: `radial-gradient(circle at 30% 40%, rgba(255,255,255,0.8) 1px, transparent 1px),
+          radial-gradient(circle at 70% 60%, rgba(255,255,255,0.6) 1px, transparent 1px),
+          radial-gradient(circle at 50% 20%, rgba(255,255,255,0.4) 1px, transparent 1px)`,
+        backgroundSize: '24px 24px, 32px 32px, 20px 20px',
+      }} />
       {/* Floating damage/heal/armor/status numbers */}
       {floats.map(f => (
         <div
@@ -153,13 +160,19 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
         </span>
       </div>
 
-      {/* Enemy emoji/avatar */}
-      <div className={`text-6xl sm:text-7xl mb-1 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`} style={{ animationDelay: `${index * 0.5}s` }}>
+      {/* Enemy emoji/avatar with dynamic glow based on HP */}
+      <div
+        className={`text-6xl sm:text-7xl mb-1 sm:mb-2 ${enemy.isFrozen ? 'opacity-60' : 'animate-float'}`}
+        style={{
+          animationDelay: `${index * 0.5}s`,
+          filter: `drop-shadow(0 0 ${8 + (100 - hpPercent) * 0.12}px rgba(${hpPercent > 30 ? '255,100,100' : '255,50,50'},${0.3 + (100 - hpPercent) * 0.005}))`,
+        }}
+      >
         {enemy.emoji}
       </div>
 
       {/* Enemy name */}
-      <h3 className="text-[12px] sm:text-sm font-bold text-gray-200 mb-0.5 sm:mb-1">{enemy.name}</h3>
+      <h3 className="text-[12px] sm:text-sm font-bold text-gray-200 mb-0.5 sm:mb-1 fantasy-text">{enemy.name}</h3>
 
       {/* Status effects */}
       {enemy.statusEffects.length > 0 && (
@@ -188,10 +201,10 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
       <div className="w-full max-w-[100px] sm:max-w-[130px] mb-0.5 sm:mb-1">
         <div className="h-2 sm:h-2 bg-gray-800 rounded-full overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${
+            className={`h-full rounded-full ${
               hpPercent > 30 ? 'enemy-hp-bar' : 'hp-bar-low'
             }`}
-            style={{ width: `${hpPercent}%` }}
+            style={{ width: `${hpPercent}%`, transition: 'width 0.5s ease-out' }}
           />
         </div>
         <div className="text-center mt-0">

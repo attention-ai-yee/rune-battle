@@ -111,7 +111,7 @@ const MapScreen: React.FC<MapScreenProps> = ({
 
       <div className="flex-1 flex flex-col items-center p-3 sm:p-4">
         {/* Title */}
-        <h2 className="text-lg sm:text-xl font-bold text-rune-gold mb-1 tracking-wider">🗺️ 地图</h2>
+        <h2 className="text-lg sm:text-xl font-bold text-rune-gold mb-1 tracking-wider fantasy-text">🗺️ 地图</h2>
         <p className="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">选择路径前进</p>
 
         {/* Layers */}
@@ -136,19 +136,26 @@ const MapScreen: React.FC<MapScreenProps> = ({
                   ${isLocked
                     ? 'border-gray-700/30 opacity-40 grayscale'
                     : allDone
-                      ? 'border-rune-green/40 opacity-70'
+                      ? 'border-rune-green/40'
                       : 'border-gray-600/50'
                   }
                 `}
+                style={{
+                  opacity: isLocked ? 0.4 : allDone ? 0.7 : 0.92 + layerIndex * 0.04,
+                  transform: `scale(${isLocked ? 0.97 : allDone ? 0.98 : 1})`,
+                  transition: 'opacity 0.5s, transform 0.5s',
+                }}
               >
                 {/* Layer header */}
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xl sm:text-2xl">{layerIcons[layerIndex] || '📍'}</span>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`text-sm sm:text-lg font-bold ${isLocked ? 'text-gray-500' : 'text-gray-200'}`}>
+                    <h3 className={`text-sm sm:text-lg font-bold fantasy-text ${isLocked ? 'text-gray-500' : 'text-gray-200'}`}>
                       {layer.name}
                     </h3>
-                    <p className="text-[9px] sm:text-xs text-gray-500">{layer.subtitle}</p>
+                    {/* Gradient underline */}
+                    <div className={`h-0.5 mt-0.5 rounded-full bg-gradient-to-r from-rune-purple/60 via-rune-gold/40 to-transparent ${isLocked ? 'opacity-30' : ''}`} />
+                    <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">{layer.subtitle}</p>
                   </div>
                   {allDone && (
                     <span className="text-rune-green text-xs sm:text-sm font-bold">✅ 已清除</span>
@@ -159,15 +166,24 @@ const MapScreen: React.FC<MapScreenProps> = ({
                 </div>
 
                 {/* Columns / branching nodes */}
-                <div className="flex gap-2 sm:gap-4 items-start overflow-x-auto pb-1 scroll-snap-x">
+                <div className="flex gap-2 sm:gap-4 items-start overflow-x-auto pb-1 scroll-snap-x relative">
                   {layer.columns.map((col, colIdx) => {
                     const available = isColumnAvailable(layer, colIdx, nextCol);
 
                     return (
-                      <div key={colIdx} className="flex flex-col gap-1.5 sm:gap-2 flex-shrink-0 scroll-snap-center">
-                        {/* Column connector line */}
+                      <div key={colIdx} className="flex flex-col gap-1.5 sm:gap-2 flex-shrink-0 scroll-snap-center relative">
+                        {/* Column connector line using SVG */}
                         {colIdx > 0 && (
-                          <div className="hidden sm:block absolute -ml-3 h-px w-3 bg-gray-600/40 mt-6" />
+                          <div className="absolute top-0 -left-2 sm:-left-4 pointer-events-none" style={{ width: '8px', height: '100%' }}>
+                            <svg width="8" height="100%" className="sm:w-4">
+                              <line x1="0" y1="30%" x2="8" y2="30%" stroke="rgba(168,85,247,0.2)" strokeWidth="1.5" strokeDasharray="3,3" />
+                            </svg>
+                          </div>
+                        )}
+
+                        {/* Current position indicator */}
+                        {available && (
+                          <div className="absolute -top-1.5 -left-0.5 sm:-top-2 sm:-left-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-rune-gold rounded-full animate-pulse shadow-[0_0_8px_rgba(212,164,76,0.6)] z-20" />
                         )}
 
                         {col.map((node, nodeIdx) => {
@@ -201,7 +217,7 @@ const MapScreen: React.FC<MapScreenProps> = ({
                               )}
 
                               {/* Node label */}
-                              <span className={`text-[9px] sm:text-[10px] font-bold ${
+                              <span className={`text-[9px] sm:text-[10px] font-bold fantasy-text ${
                                 isDone ? 'text-gray-600 line-through' : 'text-gray-300'
                               }`}>
                                 {enemyInfo ? enemyInfo.name : nodeLabels[node.type] || '???'}
