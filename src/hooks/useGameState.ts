@@ -21,7 +21,6 @@ import {
   upgradeCard as upgradeCardLogic,
   getRandomUpgradeChoices,
   getRandomCardRewardTemplates,
-  MAX_RETAIN,
 } from '../utils/gameLogic';
 import { MAP_LAYERS } from '../data/enemies';
 import {

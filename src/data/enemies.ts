@@ -27,6 +27,30 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
     ],
   },
 
+  // === Layer 1 Extra ===
+  {
+    id: 'wolf',
+    name: '狼',
+    maxHp: 22,
+    emoji: '🐺',
+    moves: [
+      { type: 'attack', value: 7, description: '撕咬' },
+      { type: 'buff', value: 2, description: '嚎叫' },
+      { type: 'attack', value: 10, description: '猛扑' },
+    ],
+  },
+  {
+    id: 'forest_spirit',
+    name: '森林精灵',
+    maxHp: 18,
+    emoji: '🌿',
+    moves: [
+      { type: 'heal', value: 6, description: '自然治愈' },
+      { type: 'defend', value: 4, description: '树皮护盾' },
+      { type: 'attack', value: 3, description: '毒触', statusEffect: { type: 'poison', value: 2 } },
+    ],
+  },
+
   // === Layer 2: Lava Cavern ===
   {
     id: 'shadow_knight',
@@ -74,8 +98,52 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
       { type: 'defend', value: 6, description: '白骨护盾' },
     ],
   },
+  {
+    id: 'lava_golem',
+    name: '熔岩魔像',
+    maxHp: 60,
+    emoji: '🗿',
+    moves: [
+      { type: 'attack', value: 14, description: '重击' },
+      { type: 'defend', value: 12, description: '熔岩护甲' },
+      { type: 'attack', value: 18, description: '爆发' },
+    ],
+  },
+  {
+    id: 'fire_imp',
+    name: '火焰小鬼',
+    maxHp: 25,
+    emoji: '😈',
+    moves: [
+      { type: 'attack', value: 9, description: '火焰弹' },
+      { type: 'defend', value: 3, description: '闪避' },
+      { type: 'attack', value: 7, description: '召唤同伴' },
+    ],
+  },
 
   // === Layer 3: Dragon's Lair ===
+  {
+    id: 'drake',
+    name: '飞龙',
+    maxHp: 45,
+    emoji: '🦎',
+    moves: [
+      { type: 'attack', value: 10, description: '撕咬' },
+      { type: 'attack', value: 14, description: '烈焰' },
+      { type: 'defend', value: 8, description: '防御' },
+    ],
+  },
+  {
+    id: 'dragon_guardian',
+    name: '龙卫',
+    maxHp: 70,
+    emoji: '🛡️',
+    moves: [
+      { type: 'attack', value: 12, description: '盾击' },
+      { type: 'defend', value: 15, description: '固守' },
+      { type: 'buff', value: 3, description: '战吼' },
+    ],
+  },
   {
     id: 'ancient_dragon',
     name: '远古巨龙',
@@ -111,6 +179,7 @@ export const MAP_LAYERS: MapLayer[] = [
     subtitle: 'Shadow Forest',
     nodes: [
       { enemyTemplateId: 'goblin', defeated: false },
+      { enemyTemplateId: 'wolf', defeated: false },
       { enemyTemplateId: 'skeleton', defeated: false },
     ],
     unlocked: true,
@@ -119,9 +188,9 @@ export const MAP_LAYERS: MapLayer[] = [
     name: '熔岩洞窟',
     subtitle: 'Lava Cavern',
     nodes: [
+      { enemyTemplateId: 'fire_imp', defeated: false },
       { enemyTemplateId: 'shadow_knight', defeated: false },
-      { enemyTemplateId: 'fire_mage', defeated: false },
-      { enemyTemplateId: 'shadow_priest', defeated: false },
+      { enemyTemplateId: 'lava_golem', defeated: false },
       { enemyTemplateId: 'necromancer', defeated: false },
     ],
     unlocked: false,
@@ -130,6 +199,7 @@ export const MAP_LAYERS: MapLayer[] = [
     name: '龙之巢穴',
     subtitle: "Dragon's Lair",
     nodes: [
+      { enemyTemplateId: 'dragon_guardian', defeated: false },
       { enemyTemplateId: 'ancient_dragon', defeated: false },
     ],
     unlocked: false,
