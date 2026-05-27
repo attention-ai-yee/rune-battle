@@ -4,6 +4,8 @@ import GameBoard from './components/GameBoard';
 import MapScreen from './components/MapScreen';
 import CardUpgradeScreen from './components/CardUpgradeScreen';
 import CardRewardScreen from './components/CardRewardScreen';
+import ShopScreen from './components/ShopScreen';
+import EventScreen from './components/EventScreen';
 import { useGameState } from './hooks/useGameState';
 import { sfxClick, bgmStart, bgmStop, isBgmPlaying } from './utils/sounds';
 
@@ -25,6 +27,12 @@ const App: React.FC = () => {
     skipUpgrade,
     selectCardReward,
     skipCardReward,
+    buyCard,
+    removeCard,
+    restHeal,
+    returnToMapFromShop,
+    selectEventChoice,
+    returnToMapFromEvent,
   } = useGameState();
 
   const [bgmOn, setBgmOn] = useState(false);
@@ -143,6 +151,9 @@ const App: React.FC = () => {
         <MuteButton />
         <MapScreen
           mapLayers={state.mapLayers}
+          playerHp={state.player.hp}
+          playerMaxHp={state.player.maxHp}
+          gold={state.gold}
           onSelectNode={selectMapNode}
         />
       </div>
@@ -194,6 +205,41 @@ const App: React.FC = () => {
           onSelectCard={selectUpgradeCard}
           onSkip={skipUpgrade}
         />
+      </div>
+    );
+  }
+
+  // Shop Screen
+  if (state.screen === 'shop') {
+    const fullDeck = [...state.drawPile, ...state.hand, ...state.discardPile];
+    return (
+      <div className="h-[100dvh] w-screen bg-rune-dark">
+        <MuteButton />
+        <ShopScreen
+          gold={state.gold}
+          deck={fullDeck}
+          onBuyCard={buyCard}
+          onRemoveCard={removeCard}
+          onRestHeal={restHeal}
+          onLeave={returnToMapFromShop}
+        />
+      </div>
+    );
+  }
+
+  // Event Screen
+  if (state.screen === 'event') {
+    const fullDeck = [...state.drawPile, ...state.hand, ...state.discardPile];
+    return (
+      <div className="h-[100dvh] w-screen bg-rune-dark">
+        <MuteButton />
+        {state.eventState && (
+          <EventScreen
+            eventData={state.eventState}
+            deck={fullDeck}
+            onChoose={selectEventChoice}
+          />
+        )}
       </div>
     );
   }

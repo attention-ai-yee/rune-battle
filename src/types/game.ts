@@ -169,20 +169,51 @@ export interface PlayerState {
 }
 
 /** Screen types */
-export type ScreenType = 'title' | 'map' | 'battle' | 'battleWin' | 'cardReward' | 'cardUpgrade' | 'gameOver' | 'victory';
+export type ScreenType = 'title' | 'map' | 'battle' | 'battleWin' | 'cardReward' | 'cardUpgrade' | 'gameOver' | 'victory' | 'shop' | 'event';
 
-/** Map node - represents an enemy encounter */
+/** Map node type */
+export type MapNodeType = 'battle' | 'elite' | 'shop' | 'event' | 'rest';
+
+/** Map node - represents a node on the map */
 export interface MapNode {
-  enemyTemplateId: string;
+  type: MapNodeType;
+  enemyTemplateId?: string;  // only for battle/elite nodes
   defeated: boolean;
+  visited?: boolean;  // for shop/event/rest nodes
 }
 
 /** Map layer - a level of the map */
 export interface MapLayer {
   name: string;
   subtitle: string;
-  nodes: MapNode[];
+  nodes: MapNode[];  // Flat list for backward compatibility
+  columns: MapNode[][];  // columns[colIndex] = array of 1-2 choices at that column position
   unlocked: boolean;
+}
+
+/** Shop state */
+export interface ShopState {
+  cardOffers: { template: CardTemplate; price: number }[];
+  removeCardPrice: number;
+  healPrice: number;
+  healAmount: number;
+  gold: number;
+}
+
+/** Event choice */
+export interface EventChoice {
+  text: string;
+  effect: 'heal' | 'damage' | 'addCard' | 'removeCard' | 'gold' | 'maxHp' | 'strength';
+  value: number;
+  cardTemplateId?: string;
+}
+
+/** Event state */
+export interface EventState {
+  title: string;
+  description: string;
+  emoji: string;
+  choices: EventChoice[];
 }
 
 /** Main game state */
@@ -217,6 +248,12 @@ export interface GameState {
   cardsPlayedThisTurn: number;
   /** Strength to gain at the start of next turn (for iron_focus combo) */
   pendingStrength: number;
+  /** Gold currency */
+  gold: number;
+  /** Current shop state (null if not in shop) */
+  shopState: ShopState | null;
+  /** Current event state (null if not in event) */
+  eventState: EventState | null;
 }
 
 /** Floating damage number for visual feedback */

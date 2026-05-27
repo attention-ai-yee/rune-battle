@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { CardInstance, CardTemplate, GameState } from '../types/game';
+import type { CardInstance, CardTemplate, GameState, EventChoice } from '../types/game';
 import {
   createStartingDeck,
   createEnemyInstance,
   createCardInstance,
 } from '../utils/gameLogic';
-import { getEnemyTemplate } from '../data/enemies';
+import { getEnemyTemplate, MAP_EVENTS } from '../data/enemies';
 import {
   createInitialState,
   startNewPlayerTurn,
@@ -110,7 +110,10 @@ export function useGameState() {
       const shuffled = shuffle(deck);
       const mapLayers = MAP_LAYERS.map(layer => ({
         ...layer,
-        nodes: layer.nodes.map(node => ({ ...node, defeated: false })),
+        nodes: layer.nodes.map(node => ({ ...node, defeated: false, visited: false })),
+        columns: layer.columns.map(col =>
+          col.map(node => ({ ...node, defeated: false, visited: false }))
+        ),
         unlocked: layer.unlocked,
       }));
 
@@ -146,14 +149,34 @@ export function useGameState() {
         exhaustedPile: [],
         cardsPlayedThisTurn: 0,
         pendingStrength: 0,
+        gold: 0,
+        shopState: null,
+        eventState: null,
       };
 
       return initialState;
     });
   }, []);
 
-  /** Select an enemy on the map to start a battle */
-  const selectMapNode = useCallback((layerIndex: number, nodeIndex: number) => {
+  /** Find the next available column in a layer */
+  const getNextAvailableColumn = useCallback((layer: typeof MAP_LAYERS[0], colIndex: number, nodeIndex: number) => {
+    // Check if the clicked column is the next available one
+    for (let i = 0; i < layer.columns.length; i++) {
+      const col = layer.columns[i];
+      const anyAvailable = col.some(n => {
+        if (n.type === 'battle' || n.type === 'elite') return !n.defeated;
+        return !n.visited;
+      });
+      if (anyAvailable) {
+        // Only allow if this is the column clicked
+        return i === colIndex;
+      }
+    }
+    return false;
+  }, []);
+
+  /** Select a node on the map (new columns-based approach) */
+  const selectMapNode = useCallback((layerIndex: number, colIndex: number, nodeIndex: number) => {
     sfxMapSelect();
     setState(prev => {
       if (prev.screen !== 'map') return prev;
@@ -161,59 +184,381 @@ export function useGameState() {
       const layer = prev.mapLayers[layerIndex];
       if (!layer || !layer.unlocked) return prev;
 
-      const node = layer.nodes[nodeIndex];
-      if (!node || node.defeated) return prev;
+      const node = layer.columns[colIndex]?.[nodeIndex];
+      if (!node) return prev;
 
-      const template = getEnemyTemplate(node.enemyTemplateId);
-      if (!template) return prev;
+      // Check if this column is the next available
+      if (!getNextAvailableColumn(layer, colIndex, nodeIndex)) return prev;
 
-      // Create enemy instance
-      const enemy = createEnemyInstance(template);
+      // Check if already done
+      const isDone = node.type === 'battle' || node.type === 'elite'
+        ? node.defeated
+        : node.visited;
+      if (isDone) return prev;
 
-      // Create fresh deck for battle (from current drawPile to preserve earned cards)
-      const fullDeck = [...prev.drawPile, ...prev.discardPile, ...prev.hand.filter(c => true)];
-      // If no cards exist (first battle), create starting deck
-      const deck = fullDeck.length > 0 ? shuffle([...fullDeck]) : createStartingDeck();
-      const shuffled = shuffle(deck);
+      // Handle different node types
+      switch (node.type) {
+        case 'battle':
+        case 'elite': {
+          const template = getEnemyTemplate(node.enemyTemplateId ?? '');
+          if (!template) return prev;
 
-      // Draw initial hand of 4 cards
-      const { hand, drawPile, discardPile } = drawCards([], shuffled, [], 4);
+          // Create enemy instance - elite gets +50% HP
+          const enemy = createEnemyInstance({
+            ...template,
+            maxHp: node.type === 'elite' ? Math.floor(template.maxHp * 1.5) : template.maxHp,
+          });
 
-      const battleState: GameState = {
-        ...prev,
-        screen: 'battle',
-        player: {
-          ...prev.player,
-          energy: prev.player.maxEnergy,
-          armor: 0,
-          statusEffects: [],
-          potions: 1, // 每场战斗1瓶药水
-          thorns: 0,
-        },
-        enemies: [enemy],
-        drawPile,
-        hand,
-        discardPile,
-        retainedCards: [],
-        isEnemyTurn: false,
-        selectedCardId: null,
-        screenShake: false,
-        animatingCardIds: [],
-        turnNumber: 1,
-        currentBattleLayer: layerIndex,
-        currentBattleNode: nodeIndex,
-        playerStrength: 0, // 战斗开始力量重置
-        upgradeChoices: [],
-        rewardChoices: [],
-        lastPlayedCard: null,
-        exhaustedPile: [], // 战斗开始时清空消耗牌堆
-        cardsPlayedThisTurn: 0,
-        pendingStrength: 0,
-      };
+          // Create fresh deck for battle
+          const fullDeck = [...prev.drawPile, ...prev.discardPile, ...prev.hand.filter(() => true)];
+          const deck = fullDeck.length > 0 ? shuffle([...fullDeck]) : createStartingDeck();
+          const shuffled = shuffle(deck);
 
-      return battleState;
+          // Draw initial hand of 4 cards
+          const { hand, drawPile, discardPile } = drawCards([], shuffled, [], 4);
+
+          return {
+            ...prev,
+            screen: 'battle',
+            player: {
+              ...prev.player,
+              energy: prev.player.maxEnergy,
+              armor: 0,
+              statusEffects: [],
+              potions: 1,
+              thorns: 0,
+            },
+            enemies: [enemy],
+            drawPile,
+            hand,
+            discardPile,
+            retainedCards: [],
+            isEnemyTurn: false,
+            selectedCardId: null,
+            screenShake: false,
+            animatingCardIds: [],
+            turnNumber: 1,
+            currentBattleLayer: layerIndex,
+            currentBattleNode: colIndex * 10 + nodeIndex, // encode column+node
+            playerStrength: 0,
+            upgradeChoices: [],
+            rewardChoices: [],
+            lastPlayedCard: null,
+            exhaustedPile: [],
+            cardsPlayedThisTurn: 0,
+            pendingStrength: 0,
+            gold: 0,
+            shopState: null,
+            eventState: null,
+            };
+        }
+
+        case 'shop': {
+          return {
+            ...prev,
+            screen: 'shop' as const,
+            shopState: null, // ShopScreen will generate its own state
+          };
+        }
+
+        case 'event': {
+          // Pick random event
+          const eventData = MAP_EVENTS[Math.floor(Math.random() * MAP_EVENTS.length)];
+          return {
+            ...prev,
+            screen: 'event' as const,
+            eventState: eventData,
+          };
+        }
+
+        case 'rest': {
+          // Rest heals 25% max HP
+          const healAmount = Math.floor(prev.player.maxHp * 0.25);
+          const newHp = Math.min(prev.player.hp + healAmount, prev.player.maxHp);
+
+          // Mark rest node as visited
+          const updatedLayers = prev.mapLayers.map((l, li) => {
+            if (li !== layerIndex) return l;
+            const newCols = l.columns.map((col, ci) => {
+              if (ci !== colIndex) return col;
+              return col.map((n, ni) => {
+                if (ni !== nodeIndex) return n;
+                return { ...n, visited: true };
+              });
+            });
+            const newNodes = l.nodes.map((n, ni) => {
+              // Also update the flat nodes array for backward compat
+              return { ...n, visited: n.type === 'rest' && ni === colIndex + nodeIndex ? true : n.visited };
+            });
+            return { ...l, columns: newCols, nodes: newNodes };
+          });
+
+          return {
+            ...prev,
+            screen: 'map',
+            mapLayers: updatedLayers,
+            player: { ...prev.player, hp: newHp },
+          };
+        }
+
+        default:
+          return prev;
+      }
+    });
+  }, [getNextAvailableColumn]);
+
+  /** Helper: mark current node as done in both columns and nodes arrays */
+  const markCurrentNodeDone = useCallback((prev: GameState, visited?: boolean): GameState['mapLayers'] => {
+    const layerIndex = prev.currentBattleLayer;
+    // Decode column+node from currentBattleNode
+    const colIndex = Math.floor(prev.currentBattleNode / 10);
+    const nodeIndex = prev.currentBattleNode % 10;
+
+    return prev.mapLayers.map((layer, li) => {
+      if (li !== layerIndex) return layer;
+
+      const newCols = layer.columns.map((col, ci) => {
+        if (ci !== colIndex) return col;
+        return col.map((n, ni) => {
+          if (ni !== nodeIndex) return n;
+          // For battle/elite: mark defeated; for others: mark visited
+          if (n.type === 'battle' || n.type === 'elite') {
+            return { ...n, defeated: true };
+          }
+          return { ...n, visited: visited ?? true };
+        });
+      });
+
+      const newNodes = layer.nodes.map((n, ni) => {
+        // Also update flat nodes for backward compat
+        // Use a heuristic: find matching node by type
+        if (ni === colIndex + nodeIndex) {
+          if (n.type === 'battle' || n.type === 'elite') {
+            if (!n.defeated) return { ...n, defeated: true };
+          } else {
+            if (!n.visited) return { ...n, visited: visited ?? true };
+          }
+        }
+        return n;
+      });
+
+      return { ...layer, columns: newCols, nodes: newNodes };
     });
   }, []);
+
+  /** Return to map from shop (marks shop as visited) */
+  const returnToMapFromShop = useCallback(() => {
+    setState(prev => {
+      if (prev.screen !== 'shop') return prev;
+
+      const mapLayers = markCurrentNodeDone(prev, true);
+
+      // Unlock next layers if current is complete
+      for (let i = 0; i < mapLayers.length; i++) {
+        if (isLayerComplete(mapLayers[i]) && i + 1 < mapLayers.length) {
+          mapLayers[i + 1] = { ...mapLayers[i + 1], unlocked: true };
+        }
+      }
+
+      if (isGameComplete(mapLayers)) {
+        return { ...prev, screen: 'victory' as const, mapLayers };
+      }
+
+      return {
+        ...prev,
+        screen: 'map' as const,
+        mapLayers,
+        shopState: null,
+      };
+    });
+  }, [markCurrentNodeDone]);
+
+  /** Return to map from event (marks event as visited) */
+  const returnToMapFromEvent = useCallback(() => {
+    setState(prev => {
+      if (prev.screen !== 'event') return prev;
+
+      const mapLayers = markCurrentNodeDone(prev, true);
+
+      for (let i = 0; i < mapLayers.length; i++) {
+        if (isLayerComplete(mapLayers[i]) && i + 1 < mapLayers.length) {
+          mapLayers[i + 1] = { ...mapLayers[i + 1], unlocked: true };
+        }
+      }
+
+      if (isGameComplete(mapLayers)) {
+        return { ...prev, screen: 'victory' as const, mapLayers };
+      }
+
+      return {
+        ...prev,
+        screen: 'map' as const,
+        mapLayers,
+        eventState: null,
+      };
+    });
+  }, [markCurrentNodeDone]);
+
+  /** Buy a card from the shop */
+  const buyCard = useCallback((template: CardTemplate) => {
+    setState(prev => {
+      if (prev.screen !== 'shop') return prev;
+
+      const price = template.rarity === 'common' ? 50 : template.rarity === 'rare' ? 80 : 120;
+      if (prev.gold < price) return prev;
+
+      const newCard = createCardInstance(template);
+      return {
+        ...prev,
+        gold: prev.gold - price,
+        drawPile: [...prev.drawPile, newCard],
+      };
+    });
+  }, []);
+
+  /** Remove a card from the deck (shop service) */
+  const removeCard = useCallback((cardInstanceId: string) => {
+    setState(prev => {
+      if (prev.screen !== 'shop') return prev;
+
+      const price = 60;
+      if (prev.gold < price) return prev;
+
+      // Remove from all piles
+      const filterFn = (c: CardInstance) => c.instanceId !== cardInstanceId;
+      return {
+        ...prev,
+        gold: prev.gold - price,
+        drawPile: prev.drawPile.filter(filterFn),
+        hand: prev.hand.filter(filterFn),
+        discardPile: prev.discardPile.filter(filterFn),
+        exhaustedPile: (prev.exhaustedPile ?? []).filter(filterFn),
+      };
+    });
+  }, []);
+
+  /** Rest and heal at the shop */
+  const restHeal = useCallback(() => {
+    setState(prev => {
+      if (prev.screen !== 'shop') return prev;
+
+      const price = 40;
+      if (prev.gold < price) return prev;
+
+      const healAmount = Math.floor(prev.player.maxHp * 0.25);
+      return {
+        ...prev,
+        gold: prev.gold - price,
+        player: {
+          ...prev.player,
+          hp: Math.min(prev.player.hp + healAmount, prev.player.maxHp),
+        },
+      };
+    });
+  }, []);
+
+  /** Handle event choice */
+  const selectEventChoice = useCallback((choice: EventChoice, randomResult?: Record<string, string | number>) => {
+    setState(prev => {
+      if (prev.screen !== 'event') return prev;
+
+      let newState = { ...prev };
+
+      if (randomResult) {
+        // Complex event outcomes
+        if (randomResult.gold !== undefined) {
+          newState.gold += Number(randomResult.gold);
+        }
+        if (randomResult.damage !== undefined) {
+          newState.player = {
+            ...newState.player,
+            hp: Math.max(0, newState.player.hp - Number(randomResult.damage)),
+          };
+          if (newState.player.hp <= 0) {
+            return { ...newState, screen: 'gameOver' as const };
+          }
+        }
+        if (randomResult.addCard !== undefined) {
+          // Add a random rare card
+          const templates = getRandomCardRewardTemplates(1);
+          if (templates.length > 0) {
+            const newCard = createCardInstance(templates[0]);
+            newState.drawPile = [...newState.drawPile, newCard];
+          }
+        }
+        if (randomResult.removeCardId !== undefined) {
+          const id = String(randomResult.removeCardId);
+          const filterFn = (c: CardInstance) => c.instanceId !== id;
+          newState.drawPile = newState.drawPile.filter(filterFn);
+          newState.hand = newState.hand.filter(filterFn);
+          newState.discardPile = newState.discardPile.filter(filterFn);
+          newState.exhaustedPile = (newState.exhaustedPile ?? []).filter(filterFn);
+        }
+        if (randomResult.strength !== undefined) {
+          // Strength for next battle
+          newState.playerStrength = (newState.playerStrength ?? 0) + Number(randomResult.strength);
+          newState.player = {
+            ...newState.player,
+            hp: newState.player.hp - (randomResult.damage ? 5 : 0), // healing spring: lose 5 HP for strength
+          };
+          if (newState.player.hp <= 0) {
+            return { ...newState, screen: 'gameOver' as const };
+          }
+        }
+      } else {
+        // Simple event effects
+        switch (choice.effect) {
+          case 'heal':
+            if (choice.value > 0) {
+              newState.player = {
+                ...newState.player,
+                hp: Math.min(newState.player.hp + choice.value, newState.player.maxHp),
+              };
+            }
+            break;
+          case 'damage':
+            newState.player = {
+              ...newState.player,
+              hp: Math.max(0, newState.player.hp - choice.value),
+            };
+            if (newState.player.hp <= 0) {
+              return { ...newState, screen: 'gameOver' as const };
+            }
+            break;
+          case 'gold':
+            newState.gold += choice.value;
+            break;
+          case 'maxHp':
+            newState.player = {
+              ...newState.player,
+              maxHp: newState.player.maxHp + choice.value,
+              hp: Math.min(newState.player.hp + choice.value, newState.player.maxHp + choice.value),
+            };
+            break;
+        }
+      }
+
+      // After handling event, return to map
+      return returnToMapFromEventDirect(newState);
+    });
+  }, []);
+
+  /** Direct return to map from event (no setState wrapper) */
+  const returnToMapFromEventDirect = (prev: GameState): GameState => {
+    const mapLayers = markCurrentNodeDone(prev, true);
+
+    for (let i = 0; i < mapLayers.length; i++) {
+      if (isLayerComplete(mapLayers[i]) && i + 1 < mapLayers.length) {
+        mapLayers[i + 1] = { ...mapLayers[i + 1], unlocked: true };
+      }
+    }
+
+    if (isGameComplete(mapLayers)) {
+      return { ...prev, screen: 'victory' as const, mapLayers, eventState: null };
+    }
+
+    return { ...prev, screen: 'map' as const, mapLayers, eventState: null };
+  };
 
   /** Select a card from hand */
   const selectCard = useCallback((cardId: string) => {
@@ -231,7 +576,6 @@ export function useGameState() {
 
       // If card needs a target but only one enemy, auto-target
       if (cardNeedsTarget(card) && prev.enemies.length === 1) {
-        // Sound will be played in playCardOnState based on card type
         return playCardOnState(prev, card, 0);
       }
 
@@ -263,8 +607,6 @@ export function useGameState() {
     setState(prev => {
       if (prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
-      // Unplayed cards are retained for next turn (enables combo planning)
-      // Reset isRetained flag since they'll be automatically kept
       const retainedCards = prev.hand.map(c => ({ ...c, isRetained: false }));
 
       return {
@@ -287,7 +629,6 @@ export function useGameState() {
       const card = prev.hand.find(c => c.instanceId === cardId);
       if (!card) return prev;
 
-      // If already retained, unretain it
       if (card.isRetained) {
         return {
           ...prev,
@@ -297,8 +638,6 @@ export function useGameState() {
         };
       }
 
-      // Mark as retained (no limit — all unplayed cards are retained anyway,
-      // this just adds a visual indicator for the player)
       return {
         ...prev,
         hand: prev.hand.map(c =>
@@ -322,7 +661,21 @@ export function useGameState() {
     setState(prev => {
       if (prev.screen !== 'battleWin') return prev;
 
-      // Roll card rewards (3 cards weighted by rarity + chain affinity)
+      // Grant gold for victory
+      const colIndex = Math.floor(prev.currentBattleNode / 10);
+      const layer = prev.mapLayers[prev.currentBattleLayer];
+      let isElite = false;
+      if (layer && layer.columns[colIndex]) {
+        const node = layer.columns[colIndex][prev.currentBattleNode % 10];
+        if (node) {
+          isElite = node.type === 'elite';
+        }
+      }
+      const goldReward = isElite
+        ? 60 + Math.floor(Math.random() * 21) // 60-80
+        : 30 + Math.floor(Math.random() * 21); // 30-50
+
+      // Roll card rewards
       const deckTemplateIds = new Set([
         ...prev.drawPile.map(c => c.templateId),
         ...prev.discardPile.map(c => c.templateId),
@@ -335,6 +688,7 @@ export function useGameState() {
         ...prev,
         screen: 'cardReward',
         rewardChoices: rewardTemplates,
+        gold: prev.gold + goldReward,
       };
     });
   }, []);
@@ -344,11 +698,9 @@ export function useGameState() {
     setState(prev => {
       if (prev.screen !== 'cardReward') return prev;
 
-      // Create a new card instance from the template and add to draw pile
       const newCard = createCardInstance(template);
       const newDrawPile = [...prev.drawPile, newCard];
 
-      // Proceed directly to card upgrade (no relic step)
       return proceedToCardUpgrade({
         ...prev,
         drawPile: newDrawPile,
@@ -362,7 +714,6 @@ export function useGameState() {
     setState(prev => {
       if (prev.screen !== 'cardReward') return prev;
 
-      // Proceed directly to card upgrade (no relic step)
       return proceedToCardUpgrade({
         ...prev,
         rewardChoices: [],
@@ -372,11 +723,9 @@ export function useGameState() {
 
   /** Internal helper: proceed to card upgrade screen */
   function proceedToCardUpgrade(prev: GameState): GameState {
-    // Collect all cards from draw pile + hand + discard pile as the full deck
     const fullDeck = [...prev.drawPile, ...prev.hand, ...prev.discardPile];
     const choices = getRandomUpgradeChoices(fullDeck, 3);
 
-    // If no upgradeable cards, go directly to map
     if (choices.length === 0) {
       return returnToMapFromState(prev);
     }
@@ -388,7 +737,7 @@ export function useGameState() {
     };
   }
 
-  /** Proceed from battleWin to card upgrade screen (legacy - now goes to card reward first) */
+  /** Proceed from battleWin to card upgrade screen (legacy) */
   const proceedToUpgrade = useCallback(() => {
     proceedToCardReward();
   }, [proceedToCardReward]);
@@ -398,10 +747,8 @@ export function useGameState() {
     setState(prev => {
       if (prev.screen !== 'cardUpgrade') return prev;
 
-      // Find the card in the full deck and upgrade it
       const upgradedCard = upgradeCardLogic(cardInstance);
 
-      // Replace the card in all piles
       const replaceCard = (pile: CardInstance[]): CardInstance[] =>
         pile.map(c => c.instanceId === cardInstance.instanceId ? upgradedCard : c);
 
@@ -425,17 +772,8 @@ export function useGameState() {
 
   /** Return to map after winning a battle (internal helper) */
   function returnToMapFromState(prev: GameState): GameState {
-    // Mark the specific enemy node as defeated
-    const mapLayers = prev.mapLayers.map((layer, li) => {
-      if (li !== prev.currentBattleLayer) return layer;
-
-      const newNodes = layer.nodes.map((node, ni) => {
-        if (ni !== prev.currentBattleNode) return node;
-        return { ...node, defeated: true };
-      });
-
-      return { ...layer, nodes: newNodes };
-    });
+    // Mark the current battle/elite node as defeated
+    const mapLayers = markCurrentNodeDone(prev);
 
     // Unlock next layers if current layer is complete
     for (let i = 0; i < mapLayers.length; i++) {
@@ -457,7 +795,7 @@ export function useGameState() {
     const missingHp = prev.player.maxHp - prev.player.hp;
     const healAmount = Math.floor(missingHp * 0.2);
 
-    // Recover exhausted cards back into the deck for next battle
+    // Recover exhausted cards
     const exhaustedCards = prev.exhaustedPile ?? [];
 
     return {
@@ -474,9 +812,9 @@ export function useGameState() {
       },
       enemies: [],
       hand: [],
-      drawPile: [...prev.drawPile, ...exhaustedCards], // Recover exhausted cards
+      drawPile: [...prev.drawPile, ...exhaustedCards],
       discardPile: prev.discardPile,
-      exhaustedPile: [], // Clear exhausted pile
+      exhaustedPile: [],
       cardsPlayedThisTurn: 0,
       pendingStrength: 0,
       retainedCards: [],
@@ -486,14 +824,14 @@ export function useGameState() {
       turnNumber: 0,
       currentBattleLayer: -1,
       currentBattleNode: -1,
-      playerStrength: 0, // 战斗结束重置力量
+      playerStrength: 0,
       upgradeChoices: [],
       rewardChoices: [],
       lastPlayedCard: null,
     };
   }
 
-  /** Return to map after winning a battle (public API, now goes to upgrade first) */
+  /** Return to map after winning a battle (public API) */
   const returnToMap = useCallback(() => {
     proceedToUpgrade();
   }, [proceedToUpgrade]);
@@ -525,6 +863,14 @@ export function useGameState() {
     skipUpgrade,
     selectCardReward,
     skipCardReward,
+    // Shop
+    buyCard,
+    removeCard,
+    restHeal,
+    returnToMapFromShop,
+    // Event
+    selectEventChoice,
+    returnToMapFromEvent,
   };
 }
 
@@ -579,7 +925,6 @@ function playCardOnState(
   // Draw cards from drawCount field (adrenaline, etc.)
   const drawCountFromType = card.effect.drawCount ?? 0;
   if (drawCountFromType > 0) {
-    // discard_draw: discard oldest card(s) in hand first (not the card just played)
     if (card.effect.discardOldest && finalHand.length > 0) {
       const discardCount = card.effect.discardCount ?? 1;
       const toDiscard = finalHand.slice(0, discardCount);
@@ -610,7 +955,6 @@ function playCardOnState(
   const livingEnemies = afterEffect.enemies.filter(e => e.hp > 0);
 
   if (livingEnemies.length === 0 && state.screen === 'battle') {
-    // Player wins the battle
     sfxVictory();
     return {
       ...afterEffect,

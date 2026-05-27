@@ -76,6 +76,12 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     upgradeChoices: [],
     rewardChoices: [],
     lastPlayedCard: null,
+    exhaustedPile: [],
+    cardsPlayedThisTurn: 0,
+    pendingStrength: 0,
+    gold: 0,
+    shopState: null,
+    eventState: null,
     ...overrides,
   };
 }

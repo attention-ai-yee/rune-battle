@@ -1123,6 +1123,9 @@ export function createInitialState(): GameState {
     exhaustedPile: [],
     cardsPlayedThisTurn: 0,
     pendingStrength: 0,
+    gold: 0,
+    shopState: null,
+    eventState: null,
   };
 }
 
@@ -1191,9 +1194,16 @@ export function cardNeedsTarget(card: CardInstance): boolean {
     card.effect.type === 'drain' || card.effect.type === 'multiHit' || card.effect.type === 'handCountDamage';
 }
 
-/** Check if all enemies in a layer are defeated */
-export function isLayerComplete(layer: { nodes: { defeated: boolean }[] }): boolean {
-  return layer.nodes.every(n => n.defeated);
+/** Check if all battle nodes in a layer are defeated (non-battle nodes don't block progress) */
+export function isLayerComplete(layer: { nodes: { type?: string; defeated: boolean; visited?: boolean }[] }): boolean {
+  return layer.nodes.every(n => {
+    // For shop/event/rest nodes, just check visited
+    if (n.type === 'shop' || n.type === 'event' || n.type === 'rest') {
+      return n.visited === true;
+    }
+    // For battle/elite nodes, check defeated
+    return n.defeated;
+  });
 }
 
 /** Check if the player has won the game (all layers complete) */

@@ -84,6 +84,12 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     upgradeChoices: [],
     rewardChoices: [],
     lastPlayedCard: null,
+    exhaustedPile: [],
+    cardsPlayedThisTurn: 0,
+    pendingStrength: 0,
+    gold: 0,
+    shopState: null,
+    eventState: null,
     ...overrides,
   };
 }
@@ -1057,16 +1063,16 @@ describe('isLayerComplete', () => {
 describe('isGameComplete', () => {
   it('should return true when all layers are complete', () => {
     const mapLayers = [
-      { name: 'Layer 1', subtitle: 'L1', nodes: [{ enemyTemplateId: 'goblin', defeated: true }, { enemyTemplateId: 'skeleton', defeated: true }], unlocked: true },
-      { name: 'Layer 2', subtitle: 'L2', nodes: [{ enemyTemplateId: 'shadow_knight', defeated: true }], unlocked: true },
+      { name: 'Layer 1', subtitle: 'L1', nodes: [{ type: 'battle' as const, enemyTemplateId: 'goblin', defeated: true }, { type: 'battle' as const, enemyTemplateId: 'skeleton', defeated: true }], columns: [[{ type: 'battle' as const, enemyTemplateId: 'goblin', defeated: true }], [{ type: 'battle' as const, enemyTemplateId: 'skeleton', defeated: true }]], unlocked: true },
+      { name: 'Layer 2', subtitle: 'L2', nodes: [{ type: 'battle' as const, enemyTemplateId: 'shadow_knight', defeated: true }], columns: [[{ type: 'battle' as const, enemyTemplateId: 'shadow_knight', defeated: true }]], unlocked: true },
     ];
     expect(isGameComplete(mapLayers)).toBe(true);
   });
 
   it('should return false when some layers are incomplete', () => {
     const mapLayers = [
-      { name: 'Layer 1', subtitle: 'L1', nodes: [{ enemyTemplateId: 'goblin', defeated: true }, { enemyTemplateId: 'skeleton', defeated: false }], unlocked: true },
-      { name: 'Layer 2', subtitle: 'L2', nodes: [{ enemyTemplateId: 'shadow_knight', defeated: true }], unlocked: false },
+      { name: 'Layer 1', subtitle: 'L1', nodes: [{ type: 'battle' as const, enemyTemplateId: 'goblin', defeated: true }, { type: 'battle' as const, enemyTemplateId: 'skeleton', defeated: false }], columns: [[{ type: 'battle' as const, enemyTemplateId: 'goblin', defeated: true }], [{ type: 'battle' as const, enemyTemplateId: 'skeleton', defeated: false }]], unlocked: true },
+      { name: 'Layer 2', subtitle: 'L2', nodes: [{ type: 'battle' as const, enemyTemplateId: 'shadow_knight', defeated: true }], columns: [[{ type: 'battle' as const, enemyTemplateId: 'shadow_knight', defeated: true }]], unlocked: false },
     ];
     expect(isGameComplete(mapLayers)).toBe(false);
   });

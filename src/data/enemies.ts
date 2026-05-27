@@ -1,4 +1,4 @@
-import type { EnemyTemplate, MapLayer } from '../types/game';
+import type { EnemyTemplate, MapLayer, EventState } from '../types/game';
 
 /** All enemy templates in the game */
 export const ENEMY_TEMPLATES: EnemyTemplate[] = [
@@ -178,9 +178,28 @@ export const MAP_LAYERS: MapLayer[] = [
     name: '暗影森林',
     subtitle: 'Shadow Forest',
     nodes: [
-      { enemyTemplateId: 'goblin', defeated: false },
-      { enemyTemplateId: 'wolf', defeated: false },
-      { enemyTemplateId: 'skeleton', defeated: false },
+      { type: 'battle', enemyTemplateId: 'wolf', defeated: false },
+      { type: 'battle', enemyTemplateId: 'forest_spirit', defeated: false },
+      { type: 'battle', enemyTemplateId: 'goblin', defeated: false },
+      { type: 'event', defeated: false },
+      { type: 'elite', enemyTemplateId: 'skeleton', defeated: false },
+      { type: 'battle', enemyTemplateId: 'shadow_knight', defeated: false },
+    ],
+    columns: [
+      [
+        { type: 'battle', enemyTemplateId: 'wolf', defeated: false },
+        { type: 'battle', enemyTemplateId: 'forest_spirit', defeated: false },
+      ],
+      [
+        { type: 'battle', enemyTemplateId: 'goblin', defeated: false },
+        { type: 'event', defeated: false },
+      ],
+      [
+        { type: 'elite', enemyTemplateId: 'skeleton', defeated: false },
+      ],
+      [
+        { type: 'battle', enemyTemplateId: 'shadow_knight', defeated: false },
+      ],
     ],
     unlocked: true,
   },
@@ -188,10 +207,30 @@ export const MAP_LAYERS: MapLayer[] = [
     name: '熔岩洞窟',
     subtitle: 'Lava Cavern',
     nodes: [
-      { enemyTemplateId: 'fire_imp', defeated: false },
-      { enemyTemplateId: 'shadow_knight', defeated: false },
-      { enemyTemplateId: 'lava_golem', defeated: false },
-      { enemyTemplateId: 'necromancer', defeated: false },
+      { type: 'battle', enemyTemplateId: 'fire_imp', defeated: false },
+      { type: 'battle', enemyTemplateId: 'fire_mage', defeated: false },
+      { type: 'shop', defeated: false },
+      { type: 'event', defeated: false },
+      { type: 'battle', enemyTemplateId: 'shadow_priest', defeated: false },
+      { type: 'battle', enemyTemplateId: 'lava_golem', defeated: false },
+      { type: 'elite', enemyTemplateId: 'necromancer', defeated: false },
+    ],
+    columns: [
+      [
+        { type: 'battle', enemyTemplateId: 'fire_imp', defeated: false },
+        { type: 'battle', enemyTemplateId: 'fire_mage', defeated: false },
+      ],
+      [
+        { type: 'shop', defeated: false },
+        { type: 'event', defeated: false },
+      ],
+      [
+        { type: 'battle', enemyTemplateId: 'shadow_priest', defeated: false },
+        { type: 'battle', enemyTemplateId: 'lava_golem', defeated: false },
+      ],
+      [
+        { type: 'elite', enemyTemplateId: 'necromancer', defeated: false },
+      ],
     ],
     unlocked: false,
   },
@@ -199,10 +238,65 @@ export const MAP_LAYERS: MapLayer[] = [
     name: '龙之巢穴',
     subtitle: "Dragon's Lair",
     nodes: [
-      { enemyTemplateId: 'dragon_guardian', defeated: false },
-      { enemyTemplateId: 'ancient_dragon', defeated: false },
+      { type: 'rest', defeated: false },
+      { type: 'battle', enemyTemplateId: 'drake', defeated: false },
+      { type: 'elite', enemyTemplateId: 'dragon_guardian', defeated: false },
+      { type: 'battle', enemyTemplateId: 'ancient_dragon', defeated: false },
+    ],
+    columns: [
+      [
+        { type: 'rest', defeated: false },
+        { type: 'battle', enemyTemplateId: 'drake', defeated: false },
+      ],
+      [
+        { type: 'elite', enemyTemplateId: 'dragon_guardian', defeated: false },
+      ],
+      [
+        { type: 'battle', enemyTemplateId: 'ancient_dragon', defeated: false },
+      ],
     ],
     unlocked: false,
+  },
+];
+
+/** Predefined events for event nodes */
+export const MAP_EVENTS: EventState[] = [
+  {
+    title: '神秘商人',
+    description: '一个戴面具的商人从阴影中走出。',
+    emoji: '🎩',
+    choices: [
+      { text: '交易 (失去5HP, 获得稀有卡)', effect: 'damage', value: 5 },
+      { text: '离开', effect: 'heal', value: 0 },
+    ],
+  },
+  {
+    title: '诅咒祭坛',
+    description: '一座散发暗光的祭坛，上面刻着古老符文。',
+    emoji: '⚗️',
+    choices: [
+      { text: '献祭 (移除1张牌)', effect: 'removeCard', value: 1 },
+      { text: '祈祷 (恢复10HP)', effect: 'heal', value: 10 },
+      { text: '离开', effect: 'heal', value: 0 },
+    ],
+  },
+  {
+    title: '古代宝箱',
+    description: '你发现了一个落满灰尘的宝箱。',
+    emoji: '📦',
+    choices: [
+      { text: '打开 (50%获得80金, 50%失去10HP)', effect: 'gold', value: 80 },
+      { text: '离开', effect: 'heal', value: 0 },
+    ],
+  },
+  {
+    title: '治愈之泉',
+    description: '清澈的泉水散发着柔和的光芒。',
+    emoji: '💧',
+    choices: [
+      { text: '饮用 (恢复15HP)', effect: 'heal', value: 15 },
+      { text: '浸泡武器 (获得2点力量, 失去5HP)', effect: 'strength', value: 2 },
+    ],
   },
 ];
 
