@@ -64,6 +64,12 @@ export function useGameState() {
           return afterEnemy;
         }
 
+        // If all enemies died from status effects, go to victory
+        if (afterEnemy.screen === 'battleWin') {
+          sfxVictory();
+          return afterEnemy;
+        }
+
         // Start new player turn
         const afterTurn = startNewPlayerTurn(afterEnemy);
         sfxDraw();

@@ -996,6 +996,18 @@ export function processEnemyActions(state: GameState): GameState {
   // Remove dead enemies
   enemies = enemies.filter(e => e.hp > 0);
 
+  // Check if all enemies died from status effects (poison/burn)
+  if (enemies.length === 0) {
+    return {
+      ...newState,
+      player,
+      enemies: [],
+      isEnemyTurn: false,
+      screen: 'battleWin',
+      screenShake: shouldShake,
+    };
+  }
+
   // Check for game over
   if (player.hp <= 0) {
     return {
