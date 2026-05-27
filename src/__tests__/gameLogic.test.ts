@@ -775,7 +775,7 @@ describe('startNewPlayerTurn', () => {
     expect(result.player.energy).toBe(3);
   });
 
-  it('should draw 4 cards', () => {
+  it('should draw 5 cards', () => {
     const deck = createStartingDeck();
     const state = makeState({
       drawPile: deck,
@@ -783,7 +783,7 @@ describe('startNewPlayerTurn', () => {
       discardPile: [],
     });
     const result = startNewPlayerTurn(state);
-    expect(result.hand.length).toBe(4);
+    expect(result.hand.length).toBe(5);
   });
 
   it('should increment turn number', () => {
@@ -1201,7 +1201,7 @@ describe('Full turn cycle (integration)', () => {
     state = startNewPlayerTurn(state);
     expect(state.player.armor).toBe(0);
     expect(state.player.energy).toBe(3);
-    expect(state.hand.length).toBe(4);
+    expect(state.hand.length).toBe(5);
   });
 });
 

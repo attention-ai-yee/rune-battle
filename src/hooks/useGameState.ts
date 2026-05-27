@@ -222,8 +222,8 @@ export function useGameState() {
           const deck = fullDeck.length > 0 ? shuffle([...fullDeck]) : createStartingDeck();
           const shuffled = shuffle(deck);
 
-          // Draw initial hand of 4 cards
-          const { hand, drawPile, discardPile } = drawCards([], shuffled, [], 4);
+          // Draw initial hand of 5 cards
+          const { hand, drawPile, discardPile } = drawCards([], shuffled, [], 5);
 
           return {
             ...prev,
@@ -621,27 +621,31 @@ export function useGameState() {
     setState(prev => {
       if (prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
-      const retainedCards = prev.hand.map(c => ({ ...c, isRetained: false }));
+      // Only cards with innate retain stay in hand
+      const stayingCards = prev.hand.filter(c => c.retain).map(c => ({ ...c, isRetained: false }));
+      // Everything else goes to discard
+      const discardedCards = prev.hand.filter(c => !c.retain);
 
       return {
         ...prev,
-        hand: [],
-        discardPile: prev.discardPile,
-        retainedCards,
+        hand: stayingCards,
+        discardPile: [...prev.discardPile, ...discardedCards],
+        retainedCards: [], // No longer using retainedCards for auto-retain
         isEnemyTurn: true,
         selectedCardId: null,
       };
     });
   }, []);
 
-  /** Toggle retain on a card (right-click / long press) */
+  /** Toggle retain visual on a card with innate retain (right-click / long press) */
   const toggleRetain = useCallback((cardId: string) => {
     sfxRetain();
     setState(prev => {
       if (prev.isEnemyTurn || prev.screen !== 'battle') return prev;
 
       const card = prev.hand.find(c => c.instanceId === cardId);
-      if (!card) return prev;
+      // Only cards with innate retain can toggle — others auto-discard on endTurn
+      if (!card || !card.retain) return prev;
 
       if (card.isRetained) {
         return {

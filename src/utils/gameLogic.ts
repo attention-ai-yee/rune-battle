@@ -1038,13 +1038,8 @@ export function processEnemyActions(state: GameState): GameState {
   };
 }
 
-/** Maximum hand size (retained + newly drawn) */
-export const HAND_LIMIT = 7;
-
-/** Get hand limit — retained cards + new draw cards, max HAND_LIMIT */
-export function getHandLimit(retainedCount: number): number {
-  return Math.min(HAND_LIMIT, retainedCount + 4);
-}
+/** Maximum hand size (safety cap) */
+export const HAND_LIMIT = 10;
 
 /** Start a new player turn */
 export function startNewPlayerTurn(state: GameState): GameState {
@@ -1075,14 +1070,14 @@ export function startNewPlayerTurn(state: GameState): GameState {
     };
   }
 
-  // Restore retained cards from the retainedCards field
-  const retainedHand = state.retainedCards.map(c => ({ ...c, isRetained: false }));
-  const handLimit = getHandLimit(retainedHand.length);
+  // Cards already in hand (retained cards with retain=true from last turn)
+  const existingHand = state.hand.map(c => ({ ...c, isRetained: false }));
+  // Draw 5 cards total minus what's already in hand
+  const DRAW_PER_TURN = 5;
+  const cardsToDraw = Math.max(0, DRAW_PER_TURN - existingHand.length);
 
-  // Draw cards, filling hand up to handLimit
-  const cardsToDraw = handLimit - retainedHand.length;
   const { hand, drawPile, discardPile } = drawCards(
-    retainedHand,
+    existingHand,
     state.drawPile,
     state.discardPile,
     cardsToDraw
