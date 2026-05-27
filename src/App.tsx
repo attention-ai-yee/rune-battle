@@ -6,6 +6,7 @@ import CardUpgradeScreen from './components/CardUpgradeScreen';
 import CardRewardScreen from './components/CardRewardScreen';
 import ShopScreen from './components/ShopScreen';
 import EventScreen from './components/EventScreen';
+import DeckViewer from './components/DeckViewer';
 import { useGameState } from './hooks/useGameState';
 import { sfxClick, bgmStart, bgmStop, isBgmPlaying } from './utils/sounds';
 
@@ -36,6 +37,7 @@ const App: React.FC = () => {
   } = useGameState();
 
   const [bgmOn, setBgmOn] = useState(false);
+  const [showDeck, setShowDeck] = useState(false);
 
   // Start BGM on first user interaction (browser autoplay policy)
   const ensureBgmStarted = useCallback(() => {
@@ -146,6 +148,7 @@ const App: React.FC = () => {
 
   // Map Screen
   if (state.screen === 'map') {
+    const deckSize = state.drawPile.length + state.hand.length + state.discardPile.length + state.exhaustedPile.length;
     return (
       <div className="h-[100dvh] w-screen bg-rune-dark">
         <MuteButton />
@@ -155,7 +158,19 @@ const App: React.FC = () => {
           playerMaxHp={state.player.maxHp}
           gold={state.gold}
           onSelectNode={selectMapNode}
+          onOpenDeck={() => setShowDeck(true)}
+          deckSize={deckSize}
         />
+        {showDeck && (
+          <DeckViewer
+            drawPile={state.drawPile}
+            hand={state.hand}
+            discardPile={state.discardPile}
+            exhaustedPile={state.exhaustedPile}
+            onClose={() => setShowDeck(false)}
+            screen="map"
+          />
+        )}
       </div>
     );
   }
@@ -174,7 +189,18 @@ const App: React.FC = () => {
           onReturnToMap={returnToMap}
           onUsePotion={usePotion}
           onToggleRetain={toggleRetain}
+          onOpenDeck={() => setShowDeck(true)}
         />
+        {showDeck && (
+          <DeckViewer
+            drawPile={state.drawPile}
+            hand={state.hand}
+            discardPile={state.discardPile}
+            exhaustedPile={state.exhaustedPile}
+            onClose={() => setShowDeck(false)}
+            screen="battle"
+          />
+        )}
       </div>
     );
   }

@@ -14,6 +14,7 @@ interface GameBoardProps {
   onReturnToMap: () => void;
   onUsePotion: () => void;
   onToggleRetain?: (cardId: string) => void;
+  onOpenDeck: () => void;
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({
@@ -25,6 +26,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   onReturnToMap,
   onUsePotion,
   onToggleRetain,
+  onOpenDeck,
 }) => {
   const { player, enemies, hand, drawPile, discardPile } = state;
   const hasSelectedCard = state.selectedCardId !== null;
@@ -184,6 +186,23 @@ const GameBoard: React.FC<GameBoardProps> = ({
             <span className={`text-xl sm:text-2xl ${hasPotion ? '' : 'grayscale'}`}>🧪</span>
             <span className={`text-[9px] sm:text-[10px] font-bold ${hasPotion ? 'text-emerald-400' : 'text-gray-600'}`}>
               药水×{player.potions}
+            </span>
+          </button>
+
+          {/* Deck viewer button */}
+          <button
+            onClick={onOpenDeck}
+            className="
+              touch-target flex flex-col items-center gap-0.5 px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg
+              bg-gray-800/50 border border-gray-600/40
+              hover:bg-gray-700/50 hover:border-rune-purple/40 active:bg-gray-600/50
+              transition-all duration-200 hover:scale-105 active:scale-95
+            "
+            title="查看牌库"
+          >
+            <span className="text-xl sm:text-2xl">📜</span>
+            <span className="text-[9px] sm:text-[10px] text-gray-400 font-bold">
+              牌库
             </span>
           </button>
 

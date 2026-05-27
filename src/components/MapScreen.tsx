@@ -8,6 +8,8 @@ interface MapScreenProps {
   playerMaxHp: number;
   gold: number;
   onSelectNode: (layerIndex: number, colIndex: number, nodeIndex: number) => void;
+  onOpenDeck: () => void;
+  deckSize: number;
 }
 
 const nodeIcons: Record<string, string> = {
@@ -32,6 +34,8 @@ const MapScreen: React.FC<MapScreenProps> = ({
   playerMaxHp,
   gold,
   onSelectNode,
+  onOpenDeck,
+  deckSize,
 }) => {
   const layerIcons = ['🌲', '🌋', '🐉'];
   const layerColors = [
@@ -107,6 +111,21 @@ const MapScreen: React.FC<MapScreenProps> = ({
             🪙 {gold}
           </span>
         </div>
+        {/* Deck viewer button */}
+        <button
+          onClick={onOpenDeck}
+          className="
+            touch-target flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg
+            bg-gray-800/50 border border-gray-600/40
+            text-gray-400 text-[10px] sm:text-xs font-bold
+            hover:text-gray-200 hover:bg-gray-700/50 hover:border-rune-purple/40
+            active:bg-gray-600/50 active:scale-95
+            transition-all duration-200
+          "
+        >
+          <span className="text-xs sm:text-sm">📜</span>
+          <span>牌库 ({deckSize})</span>
+        </button>
       </div>
 
       <div className="flex-1 flex flex-col items-center p-3 sm:p-4">
