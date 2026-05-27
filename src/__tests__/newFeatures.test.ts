@@ -826,12 +826,12 @@ describe('📖 drawCards field (replaces hardcoded fortify check)', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('🃏 Initial Deck Composition', () => {
-  it('starting deck includes new cards: whirlwind, venomous_stab, second_wind, battle_cry, adrenaline', () => {
-    expect(STARTING_DECK_COMPOSITION['whirlwind']).toBe(1);
-    expect(STARTING_DECK_COMPOSITION['venomous_stab']).toBe(1);
-    expect(STARTING_DECK_COMPOSITION['second_wind']).toBe(1);
-    expect(STARTING_DECK_COMPOSITION['battle_cry']).toBe(1);
-    expect(STARTING_DECK_COMPOSITION['adrenaline']).toBe(1);
+  it('starting deck does NOT include whirlwind, venomous_stab, second_wind, battle_cry, adrenaline (trimmed to 12)', () => {
+    expect(STARTING_DECK_COMPOSITION['whirlwind']).toBeUndefined();
+    expect(STARTING_DECK_COMPOSITION['venomous_stab']).toBeUndefined();
+    expect(STARTING_DECK_COMPOSITION['second_wind']).toBeUndefined();
+    expect(STARTING_DECK_COMPOSITION['battle_cry']).toBeUndefined();
+    expect(STARTING_DECK_COMPOSITION['adrenaline']).toBeUndefined();
   });
 
   it('starting deck does NOT include: execution, blood_pact, arcane_shield, vampiric_touch, entrench', () => {
@@ -842,13 +842,9 @@ describe('🃏 Initial Deck Composition', () => {
     expect(STARTING_DECK_COMPOSITION['entrench']).toBeUndefined();
   });
 
-  it('starting deck total count is reasonable (20-40 cards)', () => {
-    const totalCards = Object.values(STARTING_DECK_COMPOSITION).reduce(
-      (sum, count) => sum + count,
-      0
-    );
-    expect(totalCards).toBeGreaterThanOrEqual(20);
-    expect(totalCards).toBeLessThanOrEqual(40);
+  it('starting deck total count is 12 (lean deck)', () => {
+    const total = Object.values(STARTING_DECK_COMPOSITION).reduce((a, b) => a + b, 0);
+    expect(total).toBe(12);
   });
 
   it('all cards in starting deck reference valid templates', () => {

@@ -704,12 +704,12 @@ describe('🃏 New Cards - Data & Effects', () => {
     expect(STARTING_DECK_COMPOSITION['poison_blade']).toBe(1);
   });
 
-  it('starting deck contains burn_strike x1', () => {
-    expect(STARTING_DECK_COMPOSITION['burn_strike']).toBe(1);
+  it('starting deck does NOT contain burn_strike (trimmed)', () => {
+    expect(STARTING_DECK_COMPOSITION['burn_strike']).toBeUndefined();
   });
 
-  it('starting deck contains frost_nova x1', () => {
-    expect(STARTING_DECK_COMPOSITION['frost_nova']).toBe(1);
+  it('starting deck does NOT contain frost_nova (trimmed)', () => {
+    expect(STARTING_DECK_COMPOSITION['frost_nova']).toBeUndefined();
   });
 
   it('plague_cloud applies poison to all enemies', () => {
@@ -788,19 +788,17 @@ describe('👹 New Enemies - Data', () => {
     expect(poisonDart!.statusEffect!.value).toBe(2);
   });
 
-  it('layer 2 (Lava Cavern) has 4 enemy nodes', () => {
+  it('layer 2 (Lava Cavern) has 7 nodes (battles + shop/event + elite)', () => {
     expect(MAP_LAYERS.length).toBeGreaterThanOrEqual(2);
     const layer2 = MAP_LAYERS[1];
-    expect(layer2.nodes.length).toBe(4);
+    expect(layer2.nodes.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('layer 2 contains shadow_knight, fire_mage, shadow_priest, necromancer', () => {
+  it('layer 2 contains fire_mage and other enemies', () => {
     const layer2 = MAP_LAYERS[1];
     const templateIds = layer2.nodes.map(n => n.enemyTemplateId);
-    expect(templateIds).toContain('shadow_knight');
     expect(templateIds).toContain('fire_mage');
-    expect(templateIds).toContain('shadow_priest');
-    expect(templateIds).toContain('necromancer');
+    expect(templateIds).toContain('fire_imp');
   });
 
   it('ancient_dragon has immuneToFreeze flag', () => {

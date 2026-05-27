@@ -261,9 +261,9 @@ describe('📌 Retain - Card Data', () => {
     expect(CARD_UPGRADES['bastion'].effect.armor).toBeGreaterThan(bastionTemplate.effect.armor!);
   });
 
-  it('focus and bastion are in starting deck', () => {
-    expect(STARTING_DECK_COMPOSITION['focus']).toBe(1);
-    expect(STARTING_DECK_COMPOSITION['bastion']).toBe(1);
+  it('focus and bastion are NOT in starting deck (trimmed to 12 cards)', () => {
+    expect(STARTING_DECK_COMPOSITION['focus']).toBeUndefined();
+    expect(STARTING_DECK_COMPOSITION['bastion']).toBeUndefined();
   });
 
   it('createCardInstance correctly sets retain from template', () => {
@@ -286,8 +286,8 @@ describe('📌 Retain - Card Data', () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('📌 HAND_LIMIT and getHandLimit', () => {
-  it('HAND_LIMIT is 8', () => {
-    expect(HAND_LIMIT).toBe(8);
+  it('HAND_LIMIT is 7', () => {
+    expect(HAND_LIMIT).toBe(7);
   });
 
   it('getHandLimit(0) = 4 (base hand size)', () => {
@@ -302,19 +302,19 @@ describe('📌 HAND_LIMIT and getHandLimit', () => {
     expect(getHandLimit(2)).toBe(6);
   });
 
-  it('getHandLimit(4) = 8 (4 + 4 retained, capped at HAND_LIMIT=8)', () => {
-    expect(getHandLimit(4)).toBe(8);
+  it('getHandLimit(4) = 7 (4 + 4 retained, capped at HAND_LIMIT=7)', () => {
+    expect(getHandLimit(4)).toBe(7);
   });
 
-  it('getHandLimit(8) = 8 (capped at HAND_LIMIT)', () => {
-    expect(getHandLimit(8)).toBe(8);
+  it('getHandLimit(8) = 7 (capped at HAND_LIMIT)', () => {
+    expect(getHandLimit(8)).toBe(7);
   });
 
-  it('getHandLimit formula: min(8, retainedCount + 4)', () => {
-    expect(getHandLimit(0)).toBe(Math.min(8, 0 + 4)); // 4
-    expect(getHandLimit(3)).toBe(Math.min(8, 3 + 4)); // 7
-    expect(getHandLimit(4)).toBe(Math.min(8, 4 + 4)); // 8
-    expect(getHandLimit(7)).toBe(Math.min(8, 7 + 4)); // 8
+  it('getHandLimit formula: min(7, retainedCount + 4)', () => {
+    expect(getHandLimit(0)).toBe(Math.min(7, 0 + 4)); // 4
+    expect(getHandLimit(3)).toBe(Math.min(7, 3 + 4)); // 7
+    expect(getHandLimit(4)).toBe(Math.min(7, 4 + 4)); // 7 (capped)
+    expect(getHandLimit(7)).toBe(Math.min(7, 7 + 4)); // 7 (capped)
   });
 });
 
@@ -999,20 +999,19 @@ describe('📌 Retain Edge Cases', () => {
     expect(result.discardPile).toHaveLength(0);
   });
 
-  it('starting deck includes exactly 1 focus and 1 bastion', () => {
+  it('starting deck excludes focus and bastion (trimmed)', () => {
     const deck = createStartingDeck();
     const focusCards = deck.filter(c => c.templateId === 'focus');
     const bastionCards = deck.filter(c => c.templateId === 'bastion');
-    expect(focusCards).toHaveLength(1);
-    expect(bastionCards).toHaveLength(1);
+    expect(focusCards).toHaveLength(0);
+    expect(bastionCards).toHaveLength(0);
   });
 
-  it('focus and bastion cards in starting deck have retain=true', () => {
-    const deck = createStartingDeck();
-    const focusCard = deck.find(c => c.templateId === 'focus');
-    const bastionCard = deck.find(c => c.templateId === 'bastion');
-    expect(focusCard!.retain).toBe(true);
-    expect(bastionCard!.retain).toBe(true);
+  it('focus and bastion cards in CARD_TEMPLATES have retain=true', () => {
+    const focusTemplate = CARD_TEMPLATES.find(t => t.id === 'focus');
+    const bastionTemplate = CARD_TEMPLATES.find(t => t.id === 'bastion');
+    expect(focusTemplate!.retain).toBe(true);
+    expect(bastionTemplate!.retain).toBe(true);
   });
 
   it('retainedCards is reset when entering a new battle (selectMapNode)', () => {
