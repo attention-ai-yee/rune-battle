@@ -624,6 +624,161 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     effect: { type: 'multiHit', damage: 2, hits: 3, poison: 2, applyStatusPerHit: true },
     rarity: 'rare',
   },
+
+  // ═══════════════════════════════════════════
+  // === 15 New Archetype System Cards ===
+  // ═══════════════════════════════════════════
+
+  // -- System 1: 血魔法 (Blood Magic) — Pay HP for massive power --
+  {
+    id: 'demon_pact',
+    name: '恶魔契约',
+    type: 'spell',
+    cost: 0,
+    description: '失去6点生命，抽3张牌，获得1点能量',
+    effect: { type: 'selfDamage', hpCost: 6, drawCount: 3, energyGain: 1 },
+    rarity: 'epic',
+  },
+  {
+    id: 'blood_rage',
+    name: '血怒',
+    type: 'spell',
+    cost: 0,
+    description: '失去8点生命，获得4点力量（消耗）',
+    effect: { type: 'selfDamage', hpCost: 8, strengthGain: 4 },
+    rarity: 'rare',
+    exhaust: true,
+  },
+  {
+    id: 'soul_feast',
+    name: '灵魂盛宴',
+    type: 'spell',
+    cost: 2,
+    description: '造成15点伤害，恢复等量生命（消耗）',
+    effect: { type: 'drain', damage: 15 },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // -- System 2: 连击流 (Combo Engine) — Scale with cards played per turn --
+  {
+    id: 'flurry',
+    name: '疾风连打',
+    type: 'attack',
+    cost: 1,
+    description: '造成2点伤害×4次',
+    effect: { type: 'multiHit', damage: 2, hits: 4 },
+    rarity: 'common',
+  },
+  {
+    id: 'crescendo_strike',
+    name: '渐强一击',
+    type: 'attack',
+    cost: 1,
+    description: '造成2点伤害，本回合每打出1张牌+3伤害',
+    effect: { type: 'attack', damage: 2, cardsPlayedScaleMultiplier: 3 },
+    rarity: 'rare',
+  },
+  {
+    id: 'tempo_shift',
+    name: '节奏转换',
+    type: 'spell',
+    cost: 0,
+    description: '获得1点能量，抽2张牌（消耗）',
+    effect: { type: 'energyGain', energyGain: 1, hpCost: 0, drawCards: 2 },
+    rarity: 'rare',
+    exhaust: true,
+  },
+
+  // -- System 3: 灼烧流 (Burn Detonate) — Stack burn, then burst --
+  {
+    id: 'firestarter',
+    name: '纵火者',
+    type: 'attack',
+    cost: 1,
+    description: '造成3点伤害，灼烧3回合',
+    effect: { type: 'attack', damage: 3, burnDuration: 3 },
+    rarity: 'common',
+  },
+  {
+    id: 'kindle_all',
+    name: '全面引燃',
+    type: 'spell',
+    cost: 1,
+    description: '对所有敌人施加2层灼烧（2回合）',
+    effect: { type: 'aoeAttack', damage: 0, burnDuration: 2 },
+    rarity: 'rare',
+  },
+  {
+    id: 'conflagration',
+    name: '焚天',
+    type: 'attack',
+    cost: 3,
+    description: '引爆：造成灼烧层数×6伤害，然后清除灼烧（消耗）',
+    effect: { type: 'attack', damage: 0, burnScaleDamage: true, burnMultiplier: 6 },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // -- System 4: 铁壁流 (Iron Wall) — Armor + thorns + counter --
+  {
+    id: 'thorn_shield',
+    name: '荆棘之盾',
+    type: 'defense',
+    cost: 1,
+    description: '获得5点护甲，获得2点荆棘',
+    effect: { type: 'defend', armor: 5, thornsValue: 2 },
+    rarity: 'common',
+  },
+  {
+    id: 'iron_fortress',
+    name: '钢铁堡垒',
+    type: 'defense',
+    cost: 2,
+    description: '获得12点护甲，获得4点荆棘（消耗）',
+    effect: { type: 'defend', armor: 12, thornsValue: 4 },
+    rarity: 'epic',
+    exhaust: true,
+  },
+  {
+    id: 'counter_strike',
+    name: '反击',
+    type: 'attack',
+    cost: 1,
+    description: '造成等同于护甲值的伤害，抽1张牌',
+    effect: { type: 'attack', damage: 0, armorAsDamage: true, drawCards: 1 },
+    rarity: 'rare',
+  },
+
+  // -- System 5: 命运流 (Fate) — Deck manipulation & hand scaling --
+  {
+    id: 'scrying',
+    name: '预言',
+    type: 'spell',
+    cost: 0,
+    description: '抽1张牌，若手牌≥5则再抽1张',
+    effect: { type: 'draw', drawCount: 1, bonusDrawIfHandAbove: 4 },
+    rarity: 'common',
+  },
+  {
+    id: 'overclock',
+    name: '超频',
+    type: 'spell',
+    cost: 0,
+    description: '抽3张牌，弃掉最旧的2张（消耗）',
+    effect: { type: 'draw', drawCount: 3, discardOldest: true, discardCount: 2 },
+    rarity: 'rare',
+    exhaust: true,
+  },
+  {
+    id: 'mind_over_matter',
+    name: '念力',
+    type: 'attack',
+    cost: 2,
+    description: '造成手牌数量×4的伤害',
+    effect: { type: 'attack', damage: 0, handScaleMultiplier: 4 },
+    rarity: 'epic',
+  },
   {
     id: 'iron_focus',
     name: '铁壁蓄力',
@@ -704,6 +859,27 @@ export const CARD_UPGRADES: Record<string, { name: string; description: string; 
   war_frenzy: { name: '战意+', description: '获得2点力量。本回合每打出1张牌再+1力量', effect: { strengthGain: 2 } },
   venom_blade_dance: { name: '毒刃乱舞+', description: '造成3点伤害×3次，每次命中施加3层中毒', effect: { damage: 3, poison: 3 } },
   iron_focus: { name: '铁壁蓄力+', description: '获得8点护甲，下回合获得2点力量', effect: { armor: 8, nextTurnStrength: 2 } },
+  // === 15 New Archetype System Card Upgrades ===
+  // Blood Magic
+  demon_pact: { name: '恶魔契约+', description: '失去4点生命，抽3张牌，获得1点能量', effect: { hpCost: 4 } },
+  blood_rage: { name: '血怒+', description: '失去5点生命，获得5点力量（消耗）', effect: { hpCost: 5, strengthGain: 5 } },
+  soul_feast: { name: '灵魂盛宴+', description: '造成20点伤害，恢复等量生命（消耗）', effect: { damage: 20 } },
+  // Combo
+  flurry: { name: '疾风连打+', description: '造成3点伤害×4次', effect: { damage: 3 } },
+  crescendo_strike: { name: '渐强一击+', description: '造成4点伤害，本回合每打出1张牌+3伤害', effect: { damage: 4 } },
+  tempo_shift: { name: '节奏转换+', description: '获得1点能量，抽3张牌（消耗）', effect: { drawCards: 3 } },
+  // Burn
+  firestarter: { name: '纵火者+', description: '造成5点伤害，灼烧3回合', effect: { damage: 5 } },
+  kindle_all: { name: '全面引燃+', description: '对所有敌人施加3层灼烧（2回合）', effect: { burnDuration: 2, poison: 0 } },
+  conflagration: { name: '焚天+', description: '引爆：造成灼烧层数×8伤害，然后清除灼烧（消耗）', effect: { burnMultiplier: 8 } },
+  // Iron Wall
+  thorn_shield: { name: '荆棘之盾+', description: '获得7点护甲，获得3点荆棘', effect: { armor: 7, thornsValue: 3 } },
+  iron_fortress: { name: '钢铁堡垒+', description: '获得16点护甲，获得5点荆棘（消耗）', effect: { armor: 16, thornsValue: 5 } },
+  counter_strike: { name: '反击+', description: '造成等同于护甲值+3的伤害，抽1张牌', effect: { damage: 3, armorAsDamage: true, drawCards: 1 } },
+  // Fate
+  scrying: { name: '预言+', description: '抽1张牌，若手牌≥3则再抽1张', effect: { bonusDrawIfHandAbove: 2 } },
+  overclock: { name: '超频+', description: '抽4张牌，弃掉最旧的2张（消耗）', effect: { drawCount: 4 } },
+  mind_over_matter: { name: '念力+', description: '造成手牌数量×5的伤害', effect: { handScaleMultiplier: 5 } },
 };
 
 /** Starting deck composition: templateId → count */

@@ -1291,7 +1291,7 @@ describe('Card data integrity', () => {
         // toxic_burst uses poisonScaleDamage with damage: 0 base
         // burn_detonate uses burnScaleDamage with damage: 0 base
         // combo_strike uses cardsPlayedScaleMultiplier with damage: 2 base
-        const hasDamage = (template.effect.damage ?? 0) > 0 || template.effect.armorAsDamage || template.effect.poisonScaleDamage || template.effect.burnScaleDamage || template.effect.cardsPlayedScaleMultiplier;
+        const hasDamage = (template.effect.damage ?? 0) > 0 || !!template.effect.armorAsDamage || !!template.effect.poisonScaleDamage || !!template.effect.burnScaleDamage || !!template.effect.cardsPlayedScaleMultiplier || (template.effect.handScaleMultiplier ?? 0) > 0 || !!template.effect.piercing;
         expect(hasDamage).toBe(true);
       }
       if (template.effect.type === 'aoeAttack') {

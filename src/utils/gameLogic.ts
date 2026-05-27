@@ -312,10 +312,10 @@ const REWARD_RARITY_WEIGHTS: Record<string, number> = {
  *  When the player already has cards from a chain, rewards from the same chain get boosted.
  */
 const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
-  // 灼烧链
+  // 灼烧链 (expanded with burn archetype)
   {
-    keywords: ['burn', 'ember', 'inferno'],
-    cardIds: ['burn_strike', 'inferno', 'ember_dance', 'burn_detonate'],
+    keywords: ['burn', 'ember', 'inferno', 'fire', 'kindle', 'conflagration'],
+    cardIds: ['burn_strike', 'inferno', 'ember_dance', 'burn_detonate', 'firestarter', 'kindle_all', 'conflagration'],
   },
   // 毒链
   {
@@ -327,20 +327,30 @@ const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
     keywords: ['freeze', 'frost', 'ice', 'weaken'],
     cardIds: ['frost_nova', 'ice_armor', 'weaken', 'crippling_blow'],
   },
-  // 护甲链
+  // 护甲链 (expanded with iron wall archetype)
   {
-    keywords: ['armor', 'defend', 'bastion', 'fortify', 'iron_wall'],
-    cardIds: ['defend', 'iron_wall', 'fortify', 'bastion', 'shield_bash', 'armor_engine', 'bulwark', 'iron_focus'],
+    keywords: ['armor', 'defend', 'bastion', 'fortify', 'iron_wall', 'thorn', 'counter'],
+    cardIds: ['defend', 'iron_wall', 'fortify', 'bastion', 'shield_bash', 'armor_engine', 'bulwark', 'iron_focus', 'thorn_shield', 'iron_fortress', 'counter_strike'],
   },
-  // 力量链
+  // 力量链 (expanded with blood magic)
   {
-    keywords: ['strength', 'battle_cry', 'rage'],
-    cardIds: ['battle_cry', 'heavy_strike', 'skull_crusher', 'war_frenzy', 'rage_mode'],
+    keywords: ['strength', 'battle_cry', 'rage', 'blood', 'demon'],
+    cardIds: ['battle_cry', 'heavy_strike', 'skull_crusher', 'war_frenzy', 'rage_mode', 'blood_rage', 'demon_pact'],
   },
-  // 手牌/抽牌链
+  // 手牌/抽牌链 (expanded with combo/fate)
   {
-    keywords: ['draw', 'adrenaline', 'focus', 'mind'],
-    cardIds: ['adrenaline', 'focus', 'dark_ritual', 'mind_surge', 'combo_strike', 'discard_draw'],
+    keywords: ['draw', 'adrenaline', 'focus', 'mind', 'tempo', 'scry', 'overclock'],
+    cardIds: ['adrenaline', 'focus', 'dark_ritual', 'mind_surge', 'combo_strike', 'discard_draw', 'tempo_shift', 'scrying', 'overclock', 'mind_over_matter'],
+  },
+  // 连击链 (new)
+  {
+    keywords: ['combo', 'flurry', 'crescendo', 'strike'],
+    cardIds: ['flurry', 'crescendo_strike', 'combo_strike', 'double_strike', 'twin_strike'],
+  },
+  // 吸血/生命链 (new)
+  {
+    keywords: ['drain', 'vampiric', 'soul', 'feast', 'heal'],
+    cardIds: ['vampiric_touch', 'soul_drain', 'soul_feast', 'heal', 'regenerate'],
   },
 ];
 
