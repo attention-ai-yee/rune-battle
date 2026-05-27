@@ -19,7 +19,7 @@ export default {
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'card-play': 'cardPlay 0.4s ease-out forwards',
-        'shake': 'shake 0.5s ease-in-out',
+        'shake': 'shake 0.4s ease-in-out',
         'float': 'float 3s ease-in-out infinite',
         'glow-red': 'glowRed 2s ease-in-out infinite alternate',
         'glow-blue': 'glowBlue 2s ease-in-out infinite alternate',
@@ -32,6 +32,11 @@ export default {
         'fade-in': 'fadeIn 0.3s ease-out',
         'slide-up': 'slideUp 0.5s ease-out',
         'enemy-hit': 'enemyHit 0.4s ease-out',
+        'float-up': 'floatUp 0.8s ease-out forwards',
+        'float-up-green': 'floatUpGreen 0.8s ease-out forwards',
+        'float-up-blue': 'floatUpBlue 0.8s ease-out forwards',
+        'float-up-purple': 'floatUpPurple 0.8s ease-out forwards',
+        'card-play-anim': 'cardPlay 0.4s ease-out forwards',
       },
       keyframes: {
         cardPlay: {
@@ -94,6 +99,26 @@ export default {
           '50%': { transform: 'translateX(5px)', filter: 'brightness(1.5)' },
           '75%': { transform: 'translateX(-3px)', filter: 'brightness(1.2)' },
           '100%': { transform: 'translateX(0)', filter: 'brightness(1)' },
+        },
+        floatUp: {
+          '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '50%': { opacity: '1', transform: 'translateY(-15px) scale(1.15)' },
+          '100%': { opacity: '0', transform: 'translateY(-40px) scale(0.8)' },
+        },
+        floatUpGreen: {
+          '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '50%': { opacity: '1', transform: 'translateY(-12px) scale(1.1)' },
+          '100%': { opacity: '0', transform: 'translateY(-35px) scale(0.8)' },
+        },
+        floatUpBlue: {
+          '0%': { opacity: '1', transform: 'translateY(5px) scale(0.9)' },
+          '50%': { opacity: '1', transform: 'translateY(-10px) scale(1.1)' },
+          '100%': { opacity: '0', transform: 'translateY(-30px) scale(0.8)' },
+        },
+        floatUpPurple: {
+          '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '40%': { opacity: '1', transform: 'translateY(-10px) scale(1.1)' },
+          '100%': { opacity: '0', transform: 'translateY(-35px) scale(0.7)' },
         },
       },
     },

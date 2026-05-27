@@ -59,6 +59,9 @@ function makeEnemy(overrides: Partial<EnemyInstance> = {}): EnemyInstance {
     isHit: false,
     statusEffects: [],
     isFrozen: false,
+    lastDamageDealt: 0,
+    lastArmorGained: 0,
+    lastHealReceived: 0,
     ...overrides,
   };
 }
@@ -87,6 +90,9 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     exhaustedPile: [],
     cardsPlayedThisTurn: 0,
     pendingStrength: 0,
+    totalDamageDealt: 0,
+    totalCardsPlayed: 0,
+
     gold: 0,
     shopState: null,
     eventState: null,

@@ -34,11 +34,45 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   // Battle Win overlay
   if (state.screen === 'battleWin') {
+    const goldEarned = (() => {
+      const colIndex = Math.floor(state.currentBattleNode / 10);
+      const layer = state.mapLayers[state.currentBattleLayer];
+      let isElite = false;
+      if (layer && layer.columns[colIndex]) {
+        const node = layer.columns[colIndex][state.currentBattleNode % 10];
+        if (node) {
+          isElite = node.type === 'elite';
+        }
+      }
+      return isElite ? '60-80' : '30-50';
+    })();
+
     return (
       <div className="h-full flex flex-col items-center justify-center bg-rune-pattern animate-fade-in">
         <div className="text-5xl sm:text-6xl mb-4">🎉</div>
         <h2 className="text-2xl sm:text-3xl font-bold text-rune-gold mb-2">战斗胜利！</h2>
-        <p className="text-sm sm:text-base text-gray-400 mb-2">所有敌人已被击败</p>
+        <p className="text-sm sm:text-base text-gray-400 mb-3">所有敌人已被击败</p>
+
+        {/* Battle stats */}
+        <div className="flex flex-col gap-2 mb-4 px-6 py-3 bg-gray-800/40 rounded-xl border border-gray-700/50 max-w-[280px] sm:max-w-xs">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs sm:text-sm text-gray-400">🪙 获得金币</span>
+            <span className="text-xs sm:text-sm text-rune-gold font-bold">{goldEarned}</span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs sm:text-sm text-gray-400">🃏 使用卡牌</span>
+            <span className="text-xs sm:text-sm text-rune-blue font-bold">{state.totalCardsPlayed ?? 0} 张</span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs sm:text-sm text-gray-400">⚔️ 造成伤害</span>
+            <span className="text-xs sm:text-sm text-rune-red font-bold">{state.totalDamageDealt ?? 0}</span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-xs sm:text-sm text-gray-400">🔄 回合数</span>
+            <span className="text-xs sm:text-sm text-rune-purple font-bold">{state.turnNumber ?? 0}</span>
+          </div>
+        </div>
+
         <p className="text-xs sm:text-sm text-rune-green mb-6">
           恢复了 {Math.floor((player.maxHp - player.hp) * 0.2)} 点生命
         </p>

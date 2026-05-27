@@ -153,6 +153,12 @@ export interface EnemyInstance {
   isHit: boolean;
   statusEffects: StatusEffect[];
   isFrozen: boolean;
+  /** Last HP damage taken (for floating damage number display) */
+  lastDamageDealt: number;
+  /** Last armor gained (for floating armor number) */
+  lastArmorGained: number;
+  /** Last heal received (for floating heal number) */
+  lastHealReceived: number;
 }
 
 /** Player state */
@@ -254,6 +260,10 @@ export interface GameState {
   shopState: ShopState | null;
   /** Current event state (null if not in event) */
   eventState: EventState | null;
+  /** Total damage dealt this battle (for victory stats) */
+  totalDamageDealt: number;
+  /** Total cards played this battle (for victory stats) */
+  totalCardsPlayed: number;
 }
 
 /** Floating damage number for visual feedback */

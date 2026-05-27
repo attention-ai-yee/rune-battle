@@ -95,9 +95,9 @@ export function useGameState() {
     const timer = setTimeout(() => {
       setState(prev => ({
         ...prev,
-        enemies: prev.enemies.map(e => ({ ...e, isHit: false })),
+        enemies: prev.enemies.map(e => ({ ...e, isHit: false, lastDamageDealt: 0, lastArmorGained: 0, lastHealReceived: 0 })),
       }));
-    }, 300);
+    }, 800);
 
     timersRef.current.push(timer);
     return () => clearTimeout(timer);
@@ -152,6 +152,8 @@ export function useGameState() {
         gold: 0,
         shopState: null,
         eventState: null,
+        totalDamageDealt: 0,
+        totalCardsPlayed: 0,
       };
 
       return initialState;
@@ -250,6 +252,8 @@ export function useGameState() {
             gold: 0,
             shopState: null,
             eventState: null,
+            totalDamageDealt: 0,
+            totalCardsPlayed: 0,
             };
         }
 
@@ -903,6 +907,11 @@ function playCardOnState(
   // Apply card effect
   const afterEffect = applyCardEffect(card, { ...state, player }, targetEnemyIndex);
 
+  // Track total damage dealt this battle (HP + armor damage)
+  const beforeTotal = state.enemies.reduce((sum, e) => sum + e.hp + e.armor, 0);
+  const afterTotal = afterEffect.enemies.reduce((sum, e) => sum + e.hp + e.armor, 0);
+  const damageDealtThisCard = Math.max(0, beforeTotal - afterTotal);
+
   // Move card from hand; exhaust cards go to exhaustedPile (recovered after battle)
   const hand = afterEffect.hand.filter(c => c.instanceId !== card.instanceId);
   const discardPile = card.exhaust ? afterEffect.discardPile : [...afterEffect.discardPile, card];
@@ -964,6 +973,8 @@ function playCardOnState(
       discardPile: finalDiscardPile,
       exhaustedPile,
       cardsPlayedThisTurn: (afterEffect.cardsPlayedThisTurn ?? 0) + 1,
+      totalCardsPlayed: (state.totalCardsPlayed ?? 0) + 1,
+      totalDamageDealt: (state.totalDamageDealt ?? 0) + damageDealtThisCard,
       enemies: [],
       selectedCardId: null,
       screen: 'battleWin',
@@ -980,6 +991,8 @@ function playCardOnState(
     discardPile: finalDiscardPile,
     exhaustedPile,
     cardsPlayedThisTurn: (afterEffect.cardsPlayedThisTurn ?? 0) + 1,
+    totalCardsPlayed: (state.totalCardsPlayed ?? 0) + 1,
+    totalDamageDealt: (state.totalDamageDealt ?? 0) + damageDealtThisCard,
     selectedCardId: null,
     lastPlayedCard: card,
   };

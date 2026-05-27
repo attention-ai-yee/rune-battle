@@ -84,6 +84,9 @@ export function createEnemyInstance(template: EnemyTemplate): EnemyInstance {
     isHit: false,
     statusEffects: [],
     isFrozen: false,
+    lastDamageDealt: 0,
+    lastArmorGained: 0,
+    lastHealReceived: 0,
   };
 }
 
@@ -461,6 +464,7 @@ export function applyCardEffect(
       enemy.hp = Math.max(0, actualResult.newHp);
       enemy.armor = actualResult.newArmor;
       enemy.isHit = true;
+      enemy.lastDamageDealt = actualResult.actualDamage;
 
       // Apply status effects from card
       if (effect.poison) {
@@ -522,6 +526,7 @@ export function applyCardEffect(
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
+        enemy.lastDamageDealt = result.actualDamage;
 
         // Apply status effects from card on first hit only
         if (h === 0) {
@@ -623,6 +628,7 @@ export function applyCardEffect(
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
+        enemy.lastDamageDealt = result.actualDamage;
 
         // Apply status effects from card
         if (effect.poison) {
@@ -658,6 +664,7 @@ export function applyCardEffect(
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
+        enemy.lastDamageDealt = result.actualDamage;
 
         // Apply status effects from card
         if (effect.poison) {
@@ -724,6 +731,7 @@ export function applyCardEffect(
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
+        enemy.lastDamageDealt = result.actualDamage;
 
         // Apply status effects (first hit only, unless applyStatusPerHit like venom_blade_dance)
         const shouldApplyStatus = h === 0 || effect.applyStatusPerHit;
@@ -765,6 +773,7 @@ export function applyCardEffect(
       enemy.hp = Math.max(0, result.newHp);
       enemy.armor = result.newArmor;
       enemy.isHit = true;
+      enemy.lastDamageDealt = result.actualDamage;
 
       // Apply status effects from card
       if (effect.poison) {
@@ -835,6 +844,7 @@ export function applyCardEffect(
       enemy.hp = Math.max(0, result.newHp);
       enemy.armor = result.newArmor;
       enemy.isHit = true;
+      enemy.lastDamageDealt = result.actualDamage;
       newState.enemies = [...newState.enemies];
       newState.enemies[targetEnemyIndex] = enemy;
       if (enemy.hp <= 0) {
@@ -1126,6 +1136,8 @@ export function createInitialState(): GameState {
     gold: 0,
     shopState: null,
     eventState: null,
+    totalDamageDealt: 0,
+    totalCardsPlayed: 0,
   };
 }
 
