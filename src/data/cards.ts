@@ -788,6 +788,96 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     effect: { type: 'defend', armor: 5, nextTurnStrength: 1 },
     rarity: 'rare',
   },
+
+  // === New Cards: Status Effects & Meta Effects ===
+
+  // Vulnerable cards
+  {
+    id: 'expose',
+    name: '破绽',
+    type: 'spell',
+    cost: 1,
+    description: '对所有敌人施加2层易伤（2回合）',
+    effect: { type: 'aoeAttack', damage: 0, vulnerableDuration: 2 },
+    rarity: 'common',
+  },
+  {
+    id: 'mark_for_death',
+    name: '死亡标记',
+    type: 'spell',
+    cost: 2,
+    description: '对目标施加3层易伤（3回合），抽1张牌',
+    effect: { type: 'attack', damage: 0, vulnerableDuration: 3, drawCount: 1 },
+    rarity: 'rare',
+  },
+
+  // Weak cards
+  {
+    id: 'crippling_strike',
+    name: '致残打击',
+    type: 'attack',
+    cost: 1,
+    description: '造成5点伤害，施加2层虚弱（2回合）',
+    effect: { type: 'attack', damage: 5, weakDuration: 2 },
+    rarity: 'common',
+  },
+  {
+    id: 'daze',
+    name: '眩晕',
+    type: 'spell',
+    cost: 1,
+    description: '对所有敌人施加3层虚弱（2回合）',
+    effect: { type: 'aoeAttack', damage: 0, weakDuration: 2 },
+    rarity: 'common',
+  },
+
+  // Innate card
+  {
+    id: 'preparation',
+    name: '备战',
+    type: 'spell',
+    cost: 0,
+    description: '抽2张牌（固有）',
+    effect: { type: 'draw', drawCount: 2 },
+    rarity: 'rare',
+    innate: true,
+  },
+
+  // Ethereal card
+  {
+    id: 'fleeting_strike',
+    name: '瞬影斩',
+    type: 'attack',
+    cost: 0,
+    description: '造成8点伤害（虚无，消耗）',
+    effect: { type: 'attack', damage: 8 },
+    rarity: 'common',
+    ethereal: true,
+    exhaust: true,
+  },
+
+  // Amplify card
+  {
+    id: 'amplify',
+    name: '增幅',
+    type: 'spell',
+    cost: 1,
+    description: '本回合下一张牌效果翻倍（消耗）',
+    effect: { type: 'amplify' },
+    rarity: 'rare',
+    exhaust: true,
+  },
+
+  // Turn scaling card
+  {
+    id: 'patience',
+    name: '蓄势待发',
+    type: 'attack',
+    cost: 2,
+    description: '造成4+回合数×3的伤害',
+    effect: { type: 'attack', damage: 4, turnScaleMultiplier: 3 },
+    rarity: 'epic',
+  },
 ];
 
 /** Card upgrade definitions: maps templateId to upgraded card properties */
@@ -880,6 +970,15 @@ export const CARD_UPGRADES: Record<string, { name: string; description: string; 
   scrying: { name: '预言+', description: '抽1张牌，若手牌≥3则再抽1张', effect: { bonusDrawIfHandAbove: 2 } },
   overclock: { name: '超频+', description: '抽4张牌，弃掉最旧的2张（消耗）', effect: { drawCount: 4 } },
   mind_over_matter: { name: '念力+', description: '造成手牌数量×5的伤害', effect: { handScaleMultiplier: 5 } },
+  // New Cards
+  expose: { name: '破绽+', description: '对所有敌人施加3层易伤（2回合）', effect: { vulnerableDuration: 3 } },
+  mark_for_death: { name: '死亡标记+', description: '对目标施加4层易伤（3回合），抽1张牌', effect: { vulnerableDuration: 4 } },
+  crippling_strike: { name: '致残打击+', description: '造成7点伤害，施加3层虚弱（2回合）', effect: { damage: 7, weakDuration: 3 } },
+  daze: { name: '眩晕+', description: '对所有敌人施加4层虚弱（2回合）', effect: { weakDuration: 3 } },
+  preparation: { name: '备战+', description: '抽3张牌（固有）', effect: { drawCount: 3 } },
+  fleeting_strike: { name: '瞬影斩+', description: '造成12点伤害（虚无，消耗）', effect: { damage: 12 } },
+  amplify: { name: '增幅+', description: '本回合下一张牌效果翻倍（消耗）', effect: {} },
+  patience: { name: '蓄势待发+', description: '造成6+回合数×4的伤害', effect: { damage: 6, turnScaleMultiplier: 4 } },
 };
 
 /** Starting deck composition: templateId → count */

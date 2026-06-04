@@ -4,46 +4,40 @@
 
 @layer base {
   html {
-    /* Prevent overscroll bounce on mobile */
     overscroll-behavior: none;
-    /* Prevent pull-to-refresh on mobile */
     overscroll-behavior-y: contain;
   }
 
   body {
     @apply bg-rune-dark text-gray-100 select-none;
     font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    /* Disable text selection on touch devices */
     -webkit-touch-callout: none;
-    /* Improve touch responsiveness */
     touch-action: manipulation;
-    /* Prevent tap highlight on mobile */
     -webkit-tap-highlight-color: transparent;
-    /* Full height without safe-area padding (game handles its own layout) */
     margin: 0;
     padding: 0;
   }
 
-  /* Responsive font scaling - larger base on mobile for readability */
   html {
     font-size: clamp(14px, 3.5vw, 16px);
   }
 
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(0, 0, 0, 0.3);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(168, 85, 247, 0.3);
-    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(168, 85, 247, 0.5), rgba(59, 130, 246, 0.5));
+    border-radius: 3px;
   }
 }
 
 @layer components {
+  /* ===== Rune Border ===== */
   .rune-border {
     position: relative;
   }
@@ -54,81 +48,409 @@
     inset: -1px;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.5), rgba(59, 130, 246, 0.3), rgba(239, 68, 68, 0.5));
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.6), rgba(59, 130, 246, 0.4), rgba(239, 68, 68, 0.6));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
   }
 
+  /* ===== Fantasy Text ===== */
   .fantasy-text {
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 10px rgba(168, 85, 247, 0.3), 0 2px 4px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.12em;
+    text-shadow: 0 0 12px rgba(168, 85, 247, 0.4), 0 2px 6px rgba(0, 0, 0, 0.6);
   }
 
+  /* ===== Card Glow Effects ===== */
   .card-glow-red {
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4), 0 0 16px rgba(239, 68, 68, 0.2), inset 0 0 8px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5), 0 0 25px rgba(239, 68, 68, 0.25), inset 0 0 10px rgba(239, 68, 68, 0.12);
   }
 
   .card-glow-blue {
-    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4), 0 0 16px rgba(59, 130, 246, 0.2), inset 0 0 8px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 25px rgba(59, 130, 246, 0.25), inset 0 0 10px rgba(59, 130, 246, 0.12);
   }
 
   .card-glow-purple {
-    box-shadow: 0 0 8px rgba(168, 85, 247, 0.4), 0 0 16px rgba(168, 85, 247, 0.2), inset 0 0 8px rgba(168, 85, 247, 0.1);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5), 0 0 25px rgba(168, 85, 247, 0.25), inset 0 0 10px rgba(168, 85, 247, 0.12);
   }
 
+  /* ===== Background Patterns ===== */
   .bg-rune-pattern {
     background-image:
-      radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
-      radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 15% 25%, rgba(168, 85, 247, 0.12) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 75%, rgba(59, 130, 246, 0.10) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(239, 68, 68, 0.06) 0%, transparent 60%),
+      radial-gradient(circle at 30% 70%, rgba(34, 197, 94, 0.04) 0%, transparent 40%);
   }
 
+  /* Battle scene background */
+  .bg-battle-scene {
+    background:
+      linear-gradient(180deg,
+        rgba(8, 8, 24, 0.95) 0%,
+        rgba(14, 14, 36, 0.9) 30%,
+        rgba(26, 26, 62, 0.85) 60%,
+        rgba(8, 8, 24, 0.95) 100%
+      );
+    position: relative;
+  }
+
+  .bg-battle-scene::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 20% 20%, rgba(239, 68, 68, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 80% 30%, rgba(59, 130, 246, 0.06) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  /* ===== HP Bars ===== */
   .hp-bar {
-    background: linear-gradient(90deg, #22c55e, #4ade80);
-    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(90deg, #16a34a, #22c55e, #4ade80);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hp-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent);
+    pointer-events: none;
   }
 
   .hp-bar-low {
-    background: linear-gradient(90deg, #ef4444, #f87171);
-    box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+    animation: hpLowPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes hpLowPulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
   }
 
   .armor-bar {
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
-    box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
   }
 
   .enemy-hp-bar {
-    background: linear-gradient(90deg, #dc2626, #f87171);
-    box-shadow: 0 0 4px rgba(220, 38, 38, 0.4);
+    background: linear-gradient(90deg, #b91c1c, #dc2626, #ef4444);
+    box-shadow: 0 0 6px rgba(220, 38, 38, 0.5), inset 0 1px 0 rgba(255,255,255,0.15);
   }
 
-  /* Mobile touch feedback - active state for buttons */
-  @media (hover: none) and (pointer: coarse) {
-    .touch-active:active {
-      transform: scale(0.95);
-      opacity: 0.85;
-      transition: transform 0.1s ease, opacity 0.1s ease;
-    }
+  /* ===== Rune Circle ===== */
+  .rune-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+  }
 
-    /* Disable hover effects on touch devices to prevent sticky hover */
-    .hover\:scale-105:hover,
-    .hover\:scale-110:hover {
-      transform: none;
-    }
+  .rune-circle::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    border: 1px solid rgba(168, 85, 247, 0.18);
+  }
+
+  .rune-circle::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    border: 1px dashed rgba(168, 85, 247, 0.12);
+  }
+
+  /* ===== Turn Banner ===== */
+  .turn-banner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  .turn-banner-text {
+    background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.4) 20%, rgba(168, 85, 247, 0.4) 80%, transparent 100%);
+    padding: 12px 60px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #d4a44c;
+    text-shadow: 0 0 30px rgba(212, 164, 76, 0.6), 0 2px 4px rgba(0,0,0,0.5);
+    animation: turnBanner 2s ease-out forwards;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ===== Card Art Patterns ===== */
+  .card-art-attack {
+    background:
+      radial-gradient(circle at 25% 35%, rgba(239, 68, 68, 0.5) 0%, transparent 45%),
+      radial-gradient(circle at 75% 65%, rgba(239, 68, 68, 0.35) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.15) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, transparent 100%);
+  }
+
+  .card-art-defense {
+    background:
+      radial-gradient(circle at 25% 35%, rgba(59, 130, 246, 0.5) 0%, transparent 45%),
+      radial-gradient(circle at 75% 65%, rgba(59, 130, 246, 0.35) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, transparent 100%);
+  }
+
+  .card-art-spell {
+    background:
+      radial-gradient(circle at 25% 35%, rgba(168, 85, 247, 0.5) 0%, transparent 45%),
+      radial-gradient(circle at 75% 65%, rgba(168, 85, 247, 0.35) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
+      linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, transparent 100%);
+  }
+
+  /* ===== Status Effect Badges ===== */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    backdrop-filter: blur(6px);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .status-poison {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(34, 197, 94, 0.15));
+    border: 1px solid rgba(34, 197, 94, 0.5);
+    color: #4ade80;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+  }
+
+  .status-burn {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(249, 115, 22, 0.15));
+    border: 1px solid rgba(249, 115, 22, 0.5);
+    color: #fb923c;
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.2);
+  }
+
+  .status-freeze {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(6, 182, 212, 0.15));
+    border: 1px solid rgba(6, 182, 212, 0.5);
+    color: #22d3ee;
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+  }
+
+  .status-vulnerable {
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(234, 179, 8, 0.15));
+    border: 1px solid rgba(234, 179, 8, 0.5);
+    color: #facc15;
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.2);
+  }
+
+  .status-weak {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(168, 85, 247, 0.15));
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    color: #c084fc;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.2);
+  }
+
+  /* ===== Enemy Styles ===== */
+  .enemy-base {
+    position: relative;
+  }
+
+  .enemy-base::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 4px;
+    background: radial-gradient(ellipse, rgba(168, 85, 247, 0.3), transparent);
+    border-radius: 50%;
+    filter: blur(2px);
+  }
+
+  .enemy-glow {
+    filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.3));
+  }
+
+  .enemy-glow-elite {
+    filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.4));
+  }
+
+  /* ===== Hit Effects ===== */
+  .hit-effect {
+    position: absolute;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .hit-spark {
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,200,100,0.4), transparent);
+    border-radius: 50%;
+    animation: hitSpark 0.3s ease-out forwards;
+  }
+
+  /* ===== Magic Circle ===== */
+  .magic-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(168, 85, 247, 0.4);
+    animation: magicCircle 4s linear infinite;
+  }
+
+  .magic-circle::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 1px dashed rgba(168, 85, 247, 0.3);
+    animation: magicCircle 3s linear infinite reverse;
+  }
+
+  /* ===== Confetti ===== */
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    animation: confetti 3s ease-out forwards;
+  }
+
+  /* ===== Death Animation ===== */
+  .enemy-dying {
+    animation: deathFade 1s ease-out forwards;
+  }
+
+  /* ===== Map Styles ===== */
+  .map-node {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .map-node::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .map-node:hover::before {
+    opacity: 1;
+  }
+
+  .map-node-battle::before {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.3), transparent);
+  }
+
+  .map-node-elite::before {
+    background: radial-gradient(circle, rgba(249, 115, 22, 0.3), transparent);
+  }
+
+  .map-node-shop::before {
+    background: radial-gradient(circle, rgba(212, 164, 76, 0.3), transparent);
+  }
+
+  .map-node-event::before {
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.3), transparent);
+  }
+
+  .map-node-rest::before {
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.3), transparent);
+  }
+
+  /* ===== Button Styles ===== */
+  .btn-primary {
+    @apply px-6 py-2.5 rounded-lg font-bold text-sm;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(59, 130, 246, 0.3));
+    border: 2px solid rgba(168, 85, 247, 0.5);
+    color: #c084fc;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(59, 130, 246, 0.4));
+    border-color: rgba(168, 85, 247, 0.7);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.95);
+  }
+
+  .btn-gold {
+    @apply px-6 py-2.5 rounded-lg font-bold text-sm;
+    background: linear-gradient(135deg, rgba(212, 164, 76, 0.3), rgba(251, 191, 36, 0.2));
+    border: 2px solid rgba(212, 164, 76, 0.5);
+    color: #d4a44c;
+    transition: all 0.2s ease;
+  }
+
+  .btn-gold:hover {
+    background: linear-gradient(135deg, rgba(212, 164, 76, 0.4), rgba(251, 191, 36, 0.3));
+    border-color: rgba(212, 164, 76, 0.7);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(212, 164, 76, 0.3);
+  }
+
+  .btn-red {
+    @apply px-6 py-2.5 rounded-lg font-bold text-sm;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.2));
+    border: 2px solid rgba(239, 68, 68, 0.5);
+    color: #ef4444;
+    transition: all 0.2s ease;
+  }
+
+  .btn-red:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.3));
+    border-color: rgba(239, 68, 68, 0.7);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  }
+
+  /* ===== Floating Damage Numbers ===== */
+  .damage-number {
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px currentColor;
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.5);
+  }
+
+  /* ===== Panel Styles ===== */
+  .panel {
+    background: linear-gradient(135deg, rgba(14, 14, 36, 0.9), rgba(8, 8, 24, 0.95));
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+
+  .panel-glow {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 30px rgba(168, 85, 247, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
   }
 }
 
 @layer utilities {
-  /* Minimum touch target size */
   .touch-target {
     min-width: 44px;
     min-height: 44px;
   }
 
-  /* Mobile card size override */
   .card-mobile {
     @media (max-width: 640px) {
       width: 100px;
@@ -136,7 +458,6 @@
     }
   }
 
-  /* Mobile-friendly scrollbar for horizontal scroll areas */
   .scroll-snap-x {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -144,5 +465,55 @@
 
   .scroll-snap-center {
     scroll-snap-align: center;
+  }
+
+  /* ===== Text Stroke ===== */
+  .text-stroke {
+    -webkit-text-stroke: 1px rgba(0,0,0,0.5);
+  }
+
+  .text-stroke-light {
+    -webkit-text-stroke: 0.5px rgba(255,255,255,0.3);
+  }
+
+  /* ===== Gradient Text ===== */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #d4a44c, #fbbf24, #d4a44c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-purple {
+    background: linear-gradient(135deg, #a855f7, #7c3aed, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ===== Backdrop Blur ===== */
+  .backdrop-dark {
+    backdrop-filter: blur(12px) brightness(0.8);
+  }
+
+  /* ===== Animation Delays ===== */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+}
+
+/* Mobile touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  .touch-active:active {
+    transform: scale(0.95);
+    opacity: 0.85;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+
+  .hover\:scale-105:hover,
+  .hover\:scale-110:hover {
+    transform: none;
   }
 }

@@ -90,6 +90,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
       armor: 0,
       statusEffects: [],
       potions: 0,
+      potionCooldown: 0,
       thorns: 0,
     },
     enemies: [makeEnemy()],
@@ -129,7 +130,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
 describe('🔋 Energy Potion System', () => {
   it('usePotion restores 2 energy', () => {
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, potionCooldown: 0, thorns: 0 },
     });
     const result = usePotion(state);
     expect(result.player.energy).toBe(3); // 1 + 2 = 3
@@ -137,7 +138,7 @@ describe('🔋 Energy Potion System', () => {
 
   it('usePotion decrements potions by 1', () => {
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, potionCooldown: 0, thorns: 0 },
     });
     const result = usePotion(state);
     expect(result.player.potions).toBe(0);
@@ -145,7 +146,7 @@ describe('🔋 Energy Potion System', () => {
 
   it('energy can exceed maxEnergy when using potion (cap = maxEnergy + 2)', () => {
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, potionCooldown: 0, thorns: 0 },
     });
     const result = usePotion(state);
     // 3 + 2 = 5, but capped at maxEnergy + 2 = 5
@@ -155,20 +156,21 @@ describe('🔋 Energy Potion System', () => {
 
   it('energy cannot exceed maxEnergy + 2 even with multiple potions', () => {
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 2, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 2, potionCooldown: 0, thorns: 0 },
     });
     const afterFirst = usePotion(state);
     expect(afterFirst.player.energy).toBe(5);
     expect(afterFirst.player.potions).toBe(1);
-    // Second potion: 5 + 2 = 7, capped at 3 + 2 = 5
-    const afterSecond = usePotion(afterFirst);
-    expect(afterSecond.player.energy).toBe(5);
-    expect(afterSecond.player.potions).toBe(0);
+    expect(afterFirst.player.potionCooldown).toBe(3);
+    // Second potion cannot be used while on cooldown
+    const afterCooldown = usePotion(afterFirst);
+    expect(afterCooldown.player.potions).toBe(1); // unchanged due to cooldown
+    expect(afterCooldown.player.energy).toBe(5); // unchanged
   });
 
   it('potions=0 cannot use potion (returns unchanged state)', () => {
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = usePotion(state);
     expect(result.player.energy).toBe(1); // unchanged
@@ -525,7 +527,7 @@ describe('⚡ energyGain effect (Blood Pact)', () => {
       effect: { type: 'energyGain', energyGain: 2, hpCost: 5 },
     });
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = applyCardEffect(card, state);
     expect(result.player.energy).toBe(5); // 3 + 2
@@ -540,7 +542,7 @@ describe('⚡ energyGain effect (Blood Pact)', () => {
       effect: { type: 'energyGain', energyGain: 2, hpCost: 5 },
     });
     const state = makeState({
-      player: { hp: 3, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 3, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = applyCardEffect(card, state);
     expect(result.player.hp).toBe(1); // max(1, 3 - 5) = 1
@@ -555,7 +557,7 @@ describe('⚡ energyGain effect (Blood Pact)', () => {
       effect: { type: 'energyGain', energyGain: 2, hpCost: 5 },
     });
     const state = makeState({
-      player: { hp: 1, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 1, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = applyCardEffect(card, state);
     expect(result.player.hp).toBe(1); // max(1, 1 - 5) = 1
@@ -626,7 +628,7 @@ describe('💪 strength effect (Battle Cry)', () => {
     });
     const state = makeState({
       playerStrength: 4,
-      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [makeEnemy({ hp: 28, armor: 0 })],
     });
     const result = applyCardEffect(card, state, 0);
@@ -645,7 +647,7 @@ describe('🧛 drain effect (Vampiric Touch)', () => {
       effect: { type: 'drain', damage: 8 },
     });
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [makeEnemy({ hp: 28, armor: 0 })],
     });
     const result = applyCardEffect(card, state, 0);
@@ -658,7 +660,7 @@ describe('🧛 drain effect (Vampiric Touch)', () => {
       effect: { type: 'drain', damage: 10 },
     });
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [makeEnemy({ hp: 28, armor: 3 })],
     });
     const result = applyCardEffect(card, state, 0);
@@ -674,7 +676,7 @@ describe('🧛 drain effect (Vampiric Touch)', () => {
       effect: { type: 'drain', damage: 8 },
     });
     const state = makeState({
-      player: { hp: 65, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 65, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [makeEnemy({ hp: 28, armor: 0 })],
     });
     const result = applyCardEffect(card, state, 0);
@@ -931,7 +933,7 @@ describe('🖥️ UI Component Structure', () => {
     // The GameBoard component renders a potion button
     // We verify the data model supports it
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 1, maxEnergy: 3, armor: 0, statusEffects: [], potions: 1, potionCooldown: 0, thorns: 0 },
     });
     expect(state.player.potions).toBe(1);
     expect(state.player.potions).toBeGreaterThan(0);
@@ -1075,7 +1077,7 @@ describe('🔄 Integration: Card Effect Pipeline', () => {
       effect: { type: 'selfDamage', hpCost: 5, energyGain: 2 },
     });
     const state = makeState({
-      player: { hp: 4, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 4, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = applyCardEffect(card, state);
     expect(result.player.hp).toBe(1); // max(1, 4 - 5) = 1
@@ -1093,7 +1095,7 @@ describe('🛡️ Defend + Double Armor', () => {
       type: 'defense',
       effect: { type: 'defend', armor: 5 },
     });
-    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 } });
+    const state = makeState({ player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 } });
     const result = applyCardEffect(card, state);
     expect(result.player.armor).toBe(5);
   });
@@ -1122,7 +1124,7 @@ describe('🛡️ Defend + Double Armor', () => {
       effect: { type: 'defend', armor: 0, doubleArmor: true },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 5, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 5, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = applyCardEffect(card, state);
     // applyCardEffect only adds armor (0), doubleArmor is handled in playCardOnState

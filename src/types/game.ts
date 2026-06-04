@@ -69,6 +69,16 @@ export interface CardEffect {
   nextTurnStrength?: number;
   /** Apply status effects (poison/burn/freeze) on every hit instead of just the first (for venom_blade_dance) */
   applyStatusPerHit?: boolean;
+  /** Apply vulnerable status to target (take 50% more damage) */
+  vulnerableDuration?: number;
+  /** Apply weak status to target (deal 25% less damage) */
+  weakDuration?: number;
+  /** Next card this turn has doubled effect */
+  amplify?: boolean;
+  /** Create a copy of a random card in hand */
+  copyRandomCard?: boolean;
+  /** Damage scales with turn number */
+  turnScaleMultiplier?: number;
 }
 
 /** Card template - defines a card blueprint */
@@ -82,6 +92,10 @@ export interface CardTemplate {
   rarity: CardRarity;
   exhaust?: boolean;
   retain?: boolean;
+  /** Card always starts in opening hand */
+  innate?: boolean;
+  /** Card exhausts at end of turn if not played */
+  ethereal?: boolean;
 }
 
 /** Card instance - a specific card in the player's deck */
@@ -98,10 +112,14 @@ export interface CardInstance {
   exhaust: boolean;
   retain: boolean;
   isRetained: boolean;
+  /** Card always starts in opening hand */
+  innate: boolean;
+  /** Card exhausts at end of turn if not played */
+  ethereal: boolean;
 }
 
 /** Status effect types */
-export type StatusEffectType = 'poison' | 'burn' | 'freeze';
+export type StatusEffectType = 'poison' | 'burn' | 'freeze' | 'vulnerable' | 'weak';
 
 /** Status effect on an entity */
 export interface StatusEffect {
@@ -170,6 +188,8 @@ export interface PlayerState {
   armor: number;
   statusEffects: StatusEffect[];
   potions: number;
+  /** Cooldown remaining before potion can be used again (decremented each turn, set to 3 on use) */
+  potionCooldown: number;
   /** Thorns: reflects damage to enemies when attacked, cleared at start of player turn */
   thorns: number;
 }
@@ -264,6 +284,10 @@ export interface GameState {
   totalDamageDealt: number;
   /** Total cards played this battle (for victory stats) */
   totalCardsPlayed: number;
+  /** Next card played has doubled effect (from amplify card) */
+  amplified: boolean;
+  /** Temporary strength that clears at end of turn */
+  temporaryStrength: number;
 }
 
 /** Floating damage number for visual feedback */

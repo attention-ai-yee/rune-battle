@@ -61,7 +61,7 @@ function makeEnemy(overrides: Partial<EnemyInstance> = {}): EnemyInstance {
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
     screen: 'battle',
-    player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+    player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     enemies: [makeEnemy()],
     drawPile: [],
     hand: [],
@@ -131,7 +131,7 @@ describe('🧪 Poison - Core Logic', () => {
 
   it('player poison processed at start of player turn', () => {
     const state = makeState({
-      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 3 }], potions: 0, thorns: 0 },
+      player: { hp: 50, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 3 }], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = startNewPlayerTurn(state);
     expect(result.player.hp).toBe(47); // 50 - 3 = 47
@@ -145,7 +145,7 @@ describe('🧪 Poison - Core Logic', () => {
       moves: [{ type: 'attack', value: 4, description: '毒镖', statusEffect: { type: 'poison', value: 2 } }],
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);
@@ -164,7 +164,7 @@ describe('🧪 Poison - Core Logic', () => {
 
   it('poison kills player when HP reaches 0', () => {
     const state = makeState({
-      player: { hp: 2, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 5 }], potions: 0, thorns: 0 },
+      player: { hp: 2, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 5 }], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = startNewPlayerTurn(state);
     expect(result.player.hp).toBe(0);
@@ -174,7 +174,7 @@ describe('🧪 Poison - Core Logic', () => {
 
   it('player death from poison at turn start triggers gameOver screen', () => {
     const state = makeState({
-      player: { hp: 2, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 5 }], potions: 0, thorns: 0 },
+      player: { hp: 2, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [{ type: 'poison', value: 5 }], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = startNewPlayerTurn(state);
     expect(result.player.hp).toBe(0);
@@ -250,7 +250,7 @@ describe('❄️ Freeze - Core Logic', () => {
       intent: { type: 'attack', value: 10, description: '猛击' },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);
@@ -298,7 +298,7 @@ describe('❄️ Freeze - Core Logic', () => {
       intent: { type: 'defend', value: 5, description: '缩避' },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);
@@ -557,7 +557,7 @@ describe('🔄 Interaction Combinations', () => {
       intent: { type: 'attack', value: 8, description: '挥砍' },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
       enemies: [enemy],
     });
     const result = processEnemyActions(state);

@@ -220,10 +220,16 @@ export function useGameState() {
           // Create fresh deck for battle
           const fullDeck = [...prev.drawPile, ...prev.discardPile, ...prev.hand.filter(() => true)];
           const deck = fullDeck.length > 0 ? shuffle([...fullDeck]) : createStartingDeck();
-          const shuffled = shuffle(deck);
 
-          // Draw initial hand of 5 cards
-          const { hand, drawPile, discardPile } = drawCards([], shuffled, [], 5);
+          // Separate innate cards from the rest
+          const innateCards = deck.filter(c => c.innate);
+          const nonInnateCards = deck.filter(c => !c.innate);
+          const shuffledNonInnate = shuffle(nonInnateCards);
+
+          // Draw initial hand: innate cards + draw up to 5 total
+          const initialHand = [...innateCards];
+          const cardsToDraw = Math.max(0, 5 - initialHand.length);
+          const { hand, drawPile, discardPile } = drawCards(initialHand, shuffledNonInnate, [], cardsToDraw);
 
           return {
             ...prev,
@@ -234,6 +240,7 @@ export function useGameState() {
               armor: 0,
               statusEffects: [],
               potions: 1,
+              potionCooldown: 0,
               thorns: 0,
             },
             enemies: [enemy],
@@ -260,6 +267,8 @@ export function useGameState() {
             eventState: null,
             totalDamageDealt: 0,
             totalCardsPlayed: 0,
+            amplified: false,
+            temporaryStrength: 0,
             };
         }
 
@@ -623,16 +632,20 @@ export function useGameState() {
 
       // Only cards with innate retain stay in hand
       const stayingCards = prev.hand.filter(c => c.retain).map(c => ({ ...c, isRetained: false }));
-      // Everything else goes to discard
-      const discardedCards = prev.hand.filter(c => !c.retain);
+      // Everything else goes to discard or exhaust (ethereal cards exhaust at end of turn)
+      const nonRetainedCards = prev.hand.filter(c => !c.retain);
+      const etherealCards = nonRetainedCards.filter(c => c.ethereal);
+      const normalDiscardedCards = nonRetainedCards.filter(c => !c.ethereal);
 
       return {
         ...prev,
         hand: stayingCards,
-        discardPile: [...prev.discardPile, ...discardedCards],
+        discardPile: [...prev.discardPile, ...normalDiscardedCards],
+        exhaustedPile: [...(prev.exhaustedPile ?? []), ...etherealCards],
         retainedCards: [], // No longer using retainedCards for auto-retain
         isEnemyTurn: true,
         selectedCardId: null,
+        temporaryStrength: 0, // Clear temporary strength at end of turn
       };
     });
   }, []);
@@ -826,6 +839,7 @@ export function useGameState() {
         energy: prev.player.maxEnergy,
         statusEffects: [],
         potions: 0,
+        potionCooldown: 0,
         thorns: 0,
       },
       enemies: [],
@@ -918,8 +932,19 @@ function playCardOnState(
     sfxSpell();
   }
 
+  // Amplify: double damage/armor/heal if amplified
+  let cardToPlay = card;
+  if (state.amplified) {
+    const amplifiedEffect = { ...card.effect };
+    if (amplifiedEffect.damage) amplifiedEffect.damage *= 2;
+    if (amplifiedEffect.armor) amplifiedEffect.armor *= 2;
+    if (amplifiedEffect.amount) amplifiedEffect.amount *= 2;
+    if (amplifiedEffect.healAmount) amplifiedEffect.healAmount *= 2;
+    cardToPlay = { ...card, effect: amplifiedEffect };
+  }
+
   // Apply card effect
-  const afterEffect = applyCardEffect(card, { ...state, player }, targetEnemyIndex);
+  const afterEffect = applyCardEffect(cardToPlay, { ...state, player, amplified: false }, targetEnemyIndex);
 
   // Track total damage dealt this battle (HP + armor damage)
   const beforeTotal = state.enemies.reduce((sum, e) => sum + e.hp + e.armor, 0);

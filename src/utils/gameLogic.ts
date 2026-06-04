@@ -51,6 +51,8 @@ export function createCardInstance(template: CardTemplate): CardInstance {
     exhaust: template.exhaust ?? false,
     retain: template.retain ?? false,
     isRetained: false,
+    innate: template.innate ?? false,
+    ethereal: template.ethereal ?? false,
   };
 }
 
@@ -104,6 +106,20 @@ export function getPoisonStacks(statusEffects: StatusEffect[]): number {
     .reduce((sum, s) => sum + s.value, 0);
 }
 
+/** Get total vulnerable stacks from status effects */
+export function getVulnerableStacks(statusEffects: StatusEffect[]): number {
+  return statusEffects
+    .filter(s => s.type === 'vulnerable')
+    .reduce((sum, s) => sum + s.value, 0);
+}
+
+/** Get total weak stacks from status effects */
+export function getWeakStacks(statusEffects: StatusEffect[]): number {
+  return statusEffects
+    .filter(s => s.type === 'weak')
+    .reduce((sum, s) => sum + s.value, 0);
+}
+
 /** Add a status effect to an entity, merging same-type effects */
 export function addStatusEffect(
   statusEffects: StatusEffect[],
@@ -111,13 +127,13 @@ export function addStatusEffect(
 ): StatusEffect[] {
   const existing = statusEffects.find(s => s.type === newEffect.type);
   if (existing) {
-    // Merge: poison stacks add up; burn/freeze take the larger value
+    // Merge: poison stacks add up; burn/freeze/vulnerable/weak take the larger value
     if (newEffect.type === 'poison') {
       return statusEffects.map(s =>
         s.type === 'poison' ? { ...s, value: s.value + newEffect.value } : s
       );
     } else {
-      // burn/freeze: take max duration
+      // burn/freeze/vulnerable/weak: take max duration
       return statusEffects.map(s =>
         s.type === newEffect.type ? { ...s, value: Math.max(s.value, newEffect.value) } : s
       );
@@ -205,18 +221,25 @@ export function drawCards(
   return { hand: currentHand, drawPile: currentDraw, discardPile: currentDiscard };
 }
 
-/** Apply damage to a target with armor reduction and optional burn bonus */
+/** Apply damage to a target with armor reduction and optional burn/vulnerable bonus */
 export function applyDamageToTarget(
   damage: number,
   currentHp: number,
   currentArmor: number,
-  burnStacks: number = 0
+  burnStacks: number = 0,
+  vulnerableStacks: number = 0
 ): { newHp: number; newArmor: number; actualDamage: number } {
   // Burn bonus: +50% damage (rounded down, minimum +1)
   let totalDamage = damage;
   if (burnStacks > 0 && damage > 0) {
     const bonus = Math.max(1, Math.floor(damage * 0.5));
     totalDamage = damage + bonus;
+  }
+
+  // Vulnerable bonus: +50% damage (rounded down, minimum +1)
+  if (vulnerableStacks > 0 && damage > 0) {
+    const bonus = Math.max(1, Math.floor(damage * 0.5));
+    totalDamage = totalDamage + bonus;
   }
 
   if (totalDamage <= currentArmor) {
@@ -256,6 +279,16 @@ export function processStatusEffects<T extends { hp: number; armor: number; stat
     .map(s => (s.type === 'freeze' ? { ...s, value: s.value - 1 } : s))
     .filter(s => s.value > 0);
 
+  // Vulnerable: decrement duration by 1
+  statusEffects = statusEffects
+    .map(s => (s.type === 'vulnerable' ? { ...s, value: s.value - 1 } : s))
+    .filter(s => s.value > 0);
+
+  // Weak: decrement duration by 1
+  statusEffects = statusEffects
+    .map(s => (s.type === 'weak' ? { ...s, value: s.value - 1 } : s))
+    .filter(s => s.value > 0);
+
   const newHp = entity.hp - poisonDamage;
   const isFrozen = statusEffects.some(s => s.type === 'freeze');
 
@@ -265,15 +298,16 @@ export function processStatusEffects<T extends { hp: number; armor: number; stat
   };
 }
 
-/** Use an energy potion to restore 2 energy */
+/** Use an energy potion to restore 2 energy (cooldown: 3 turns) */
 export function usePotion(state: GameState): GameState {
-  if (state.player.potions <= 0) return state;
+  if (state.player.potions <= 0 || state.player.potionCooldown > 0) return state;
   return {
     ...state,
     player: {
       ...state.player,
       energy: Math.min(state.player.energy + 2, state.player.maxEnergy + 2), // 允许超过上限
       potions: state.player.potions - 1,
+      potionCooldown: 3,
     },
   };
 }
@@ -324,8 +358,8 @@ const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
   },
   // 冰冻/控制链
   {
-    keywords: ['freeze', 'frost', 'ice', 'weaken'],
-    cardIds: ['frost_nova', 'ice_armor', 'weaken', 'crippling_blow'],
+    keywords: ['freeze', 'frost', 'ice', 'weaken', 'daze', 'crippling'],
+    cardIds: ['frost_nova', 'ice_armor', 'weaken', 'crippling_blow', 'daze', 'crippling_strike'],
   },
   // 护甲链 (expanded with iron wall archetype)
   {
@@ -339,8 +373,8 @@ const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
   },
   // 手牌/抽牌链 (expanded with combo/fate)
   {
-    keywords: ['draw', 'adrenaline', 'focus', 'mind', 'tempo', 'scry', 'overclock'],
-    cardIds: ['adrenaline', 'focus', 'dark_ritual', 'mind_surge', 'combo_strike', 'discard_draw', 'tempo_shift', 'scrying', 'overclock', 'mind_over_matter'],
+    keywords: ['draw', 'adrenaline', 'focus', 'mind', 'tempo', 'scry', 'overclock', 'preparation'],
+    cardIds: ['adrenaline', 'focus', 'dark_ritual', 'mind_surge', 'combo_strike', 'discard_draw', 'tempo_shift', 'scrying', 'overclock', 'mind_over_matter', 'preparation'],
   },
   // 连击链 (new)
   {
@@ -351,6 +385,16 @@ const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
   {
     keywords: ['drain', 'vampiric', 'soul', 'feast', 'heal'],
     cardIds: ['vampiric_touch', 'soul_drain', 'soul_feast', 'heal', 'regenerate'],
+  },
+  // 易伤链 (new)
+  {
+    keywords: ['vulnerable', 'expose', 'mark', 'death'],
+    cardIds: ['expose', 'mark_for_death'],
+  },
+  // 增幅链 (new)
+  {
+    keywords: ['amplify', 'patience', 'fleeting'],
+    cardIds: ['amplify', 'patience', 'fleeting_strike'],
   },
 ];
 
@@ -443,6 +487,9 @@ export function applyCardEffect(
       } else if (effect.cardsPlayedScaleMultiplier) {
         // combo_strike: damage = cards played this turn × multiplier
         totalDamage = (state.cardsPlayedThisTurn ?? 0) * effect.cardsPlayedScaleMultiplier + (effect.damage ?? 0) + playerStrength;
+      } else if (effect.turnScaleMultiplier) {
+        // patience: damage scales with turn number
+        totalDamage = (effect.damage ?? 0) + (state.turnNumber ?? 0) * effect.turnScaleMultiplier + playerStrength;
       } else {
         totalDamage = (effect.damage ?? 0) + playerStrength;
       }
@@ -464,11 +511,12 @@ export function applyCardEffect(
       }
 
       // Piercing: bypass armor completely
+      const vulnerableStacks = getVulnerableStacks(enemy.statusEffects);
       let actualResult: { newHp: number; newArmor: number; actualDamage: number };
       if (effect.piercing) {
         actualResult = { newHp: enemy.hp - totalDamage, newArmor: enemy.armor, actualDamage: totalDamage };
       } else {
-        actualResult = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks);
+        actualResult = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks, vulnerableStacks);
       }
 
       enemy.hp = Math.max(0, actualResult.newHp);
@@ -482,6 +530,12 @@ export function applyCardEffect(
       }
       if (effect.burnDuration) {
         enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+      }
+      if (effect.vulnerableDuration) {
+        enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'vulnerable', value: effect.vulnerableDuration });
+      }
+      if (effect.weakDuration) {
+        enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'weak', value: effect.weakDuration });
       }
       if (effect.freezeDuration) {
         // Check immuneToFreeze from original enemy template
@@ -532,7 +586,8 @@ export function applyCardEffect(
 
         let enemy = { ...enemies[targetIdx] };
         const burnStacks = getBurnStacks(enemy.statusEffects);
-        const result = applyDamageToTarget(damagePerHit, enemy.hp, enemy.armor, burnStacks);
+        const vulnerableStacks = getVulnerableStacks(enemy.statusEffects);
+        const result = applyDamageToTarget(damagePerHit, enemy.hp, enemy.armor, burnStacks, vulnerableStacks);
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
@@ -545,6 +600,12 @@ export function applyCardEffect(
           }
           if (effect.burnDuration) {
             enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+          }
+          if (effect.vulnerableDuration) {
+            enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'vulnerable', value: effect.vulnerableDuration });
+          }
+          if (effect.weakDuration) {
+            enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'weak', value: effect.weakDuration });
           }
           if (effect.freezeDuration) {
             const template = getEnemyTemplate(enemies[targetIdx].templateId);
@@ -634,7 +695,8 @@ export function applyCardEffect(
       for (let i = 0; i < enemies.length; i++) {
         let enemy = { ...enemies[i] };
         const burnStacks = getBurnStacks(enemy.statusEffects);
-        const result = applyDamageToTarget(damage, enemy.hp, enemy.armor, burnStacks);
+        const vulnerableStacks = getVulnerableStacks(enemy.statusEffects);
+        const result = applyDamageToTarget(damage, enemy.hp, enemy.armor, burnStacks, vulnerableStacks);
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
@@ -646,6 +708,12 @@ export function applyCardEffect(
         }
         if (effect.burnDuration) {
           enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+        }
+        if (effect.vulnerableDuration) {
+          enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'vulnerable', value: effect.vulnerableDuration });
+        }
+        if (effect.weakDuration) {
+          enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'weak', value: effect.weakDuration });
         }
         if (effect.freezeDuration) {
           const template = getEnemyTemplate(enemies[i].templateId);
@@ -670,7 +738,8 @@ export function applyCardEffect(
       for (let i = 0; i < enemies.length; i++) {
         let enemy = { ...enemies[i] };
         const burnStacks = getBurnStacks(enemy.statusEffects);
-        const result = applyDamageToTarget(damage, enemy.hp, enemy.armor, burnStacks);
+        const vulnerableStacks = getVulnerableStacks(enemy.statusEffects);
+        const result = applyDamageToTarget(damage, enemy.hp, enemy.armor, burnStacks, vulnerableStacks);
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
@@ -682,6 +751,12 @@ export function applyCardEffect(
         }
         if (effect.burnDuration) {
           enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+        }
+        if (effect.vulnerableDuration) {
+          enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'vulnerable', value: effect.vulnerableDuration });
+        }
+        if (effect.weakDuration) {
+          enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'weak', value: effect.weakDuration });
         }
         if (effect.freezeDuration) {
           const template = getEnemyTemplate(enemies[i].templateId);
@@ -737,7 +812,8 @@ export function applyCardEffect(
 
         let enemy = { ...enemies[targetIdx] };
         const burnStacks = getBurnStacks(enemy.statusEffects);
-        const result = applyDamageToTarget(damagePerHit, enemy.hp, enemy.armor, burnStacks);
+        const vulnerableStacks = getVulnerableStacks(enemy.statusEffects);
+        const result = applyDamageToTarget(damagePerHit, enemy.hp, enemy.armor, burnStacks, vulnerableStacks);
         enemy.hp = Math.max(0, result.newHp);
         enemy.armor = result.newArmor;
         enemy.isHit = true;
@@ -751,6 +827,12 @@ export function applyCardEffect(
           }
           if (effect.burnDuration) {
             enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'burn', value: effect.burnDuration });
+          }
+          if (effect.vulnerableDuration) {
+            enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'vulnerable', value: effect.vulnerableDuration });
+          }
+          if (effect.weakDuration) {
+            enemy.statusEffects = addStatusEffect(enemy.statusEffects, { type: 'weak', value: effect.weakDuration });
           }
           if (effect.freezeDuration) {
             const template = getEnemyTemplate(enemies[targetIdx].templateId);
@@ -778,8 +860,9 @@ export function applyCardEffect(
       if (targetEnemyIndex === undefined) break;
       const enemy = { ...newState.enemies[targetEnemyIndex] };
       const burnStacks = getBurnStacks(enemy.statusEffects);
+      const vulnerableStacks = getVulnerableStacks(enemy.statusEffects);
       const totalDamage = state.hand.length * (effect.handScaleMultiplier ?? 3) + playerStrength;
-      const result = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks);
+      const result = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks, vulnerableStacks);
       enemy.hp = Math.max(0, result.newHp);
       enemy.armor = result.newArmor;
       enemy.isHit = true;
@@ -849,8 +932,9 @@ export function applyCardEffect(
       if (targetEnemyIndex === undefined) break;
       const enemy = { ...newState.enemies[targetEnemyIndex] };
       const burnStacks = getBurnStacks(enemy.statusEffects);
+      const vulnerableStacks = getVulnerableStacks(enemy.statusEffects);
       const totalDamage = (effect.damage ?? 0) + playerStrength;
-      const result = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks);
+      const result = applyDamageToTarget(totalDamage, enemy.hp, enemy.armor, burnStacks, vulnerableStacks);
       enemy.hp = Math.max(0, result.newHp);
       enemy.armor = result.newArmor;
       enemy.isHit = true;
@@ -917,6 +1001,27 @@ export function applyCardEffect(
       // These types are not standalone - they are applied through attack/attackAll effects
       // If a card has only a status effect type without attack, it's a no-op here
       break;
+
+    case 'amplify': {
+      // Mark next card as amplified (2x effect)
+      newState.amplified = true;
+      break;
+    }
+
+    case 'copyRandomCard': {
+      // Create a copy of a random card in hand
+      if (state.hand.length > 0) {
+        const randomIndex = Math.floor(Math.random() * state.hand.length);
+        const originalCard = state.hand[randomIndex];
+        const copiedCard: CardInstance = {
+          ...originalCard,
+          instanceId: generateId('card'),
+          isRetained: false,
+        };
+        newState.hand = [...newState.hand, copiedCard];
+      }
+      break;
+    }
   }
 
   return newState;
@@ -958,6 +1063,12 @@ export function processEnemyActions(state: GameState): GameState {
 
     if (intent.type === 'attack') {
       let totalDamage = intent.value;
+
+      // Weak: reduce enemy damage by 25%
+      const weakStacks = getWeakStacks(enemy.statusEffects);
+      if (weakStacks > 0) {
+        totalDamage = Math.floor(totalDamage * 0.75);
+      }
 
       const result = applyDamageToTarget(totalDamage, player.hp, player.armor);
       player.hp = Math.max(0, result.newHp);
@@ -1056,12 +1167,13 @@ export function startNewPlayerTurn(state: GameState): GameState {
   // Process player status effects at the start of their turn
   const { entity: processedPlayer } = processStatusEffects(state.player);
 
-  // Clear player armor and thorns from last turn
+  // Clear player armor and thorns from last turn, decrement potion cooldown
   let player: PlayerState = {
     ...processedPlayer,
     armor: 0,
     energy: state.player.maxEnergy,
     thorns: 0,
+    potionCooldown: Math.max(0, processedPlayer.potionCooldown - 1),
   };
 
   let enemies = [...state.enemies];
@@ -1086,11 +1198,19 @@ export function startNewPlayerTurn(state: GameState): GameState {
   const DRAW_PER_TURN = 5;
   const cardsToDraw = Math.max(0, DRAW_PER_TURN - existingHand.length);
 
+  // Separate innate cards from draw pile to ensure they're drawn first
+  const innateInDrawPile = state.drawPile.filter(c => c.innate);
+  const nonInnateInDrawPile = state.drawPile.filter(c => !c.innate);
+
+  // Draw innate cards first, then fill up to cardsToDraw with regular cards
+  const innateHand = [...existingHand, ...innateInDrawPile];
+  const remainingToDraw = Math.max(0, cardsToDraw - innateInDrawPile.length);
+
   const { hand, drawPile, discardPile } = drawCards(
-    existingHand,
-    state.drawPile,
+    innateHand,
+    nonInnateInDrawPile,
     state.discardPile,
-    cardsToDraw
+    remainingToDraw
   );
 
   // Apply pending strength from previous turn (e.g. iron_focus)
@@ -1099,6 +1219,8 @@ export function startNewPlayerTurn(state: GameState): GameState {
 
   return {
     ...state,
+    amplified: false,
+    temporaryStrength: 0,
     player,
     enemies,
     hand,
@@ -1128,6 +1250,7 @@ export function createInitialState(): GameState {
       armor: 0,
       statusEffects: [],
       potions: 0,
+      potionCooldown: 0,
       thorns: 0,
     },
     enemies: [],
@@ -1155,6 +1278,8 @@ export function createInitialState(): GameState {
     eventState: null,
     totalDamageDealt: 0,
     totalCardsPlayed: 0,
+    amplified: false,
+    temporaryStrength: 0,
   };
 }
 

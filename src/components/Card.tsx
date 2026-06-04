@@ -7,71 +7,54 @@ interface CardProps {
   isPlayable: boolean;
   isEnemyTurn: boolean;
   onClick: () => void;
-  /** If true, show upgrade comparison mode */
   showUpgradePreview?: boolean;
-  /** If true, show retain toggle UI */
   showRetainToggle?: boolean;
-  /** If true, this card is retained for next turn */
   isRetained?: boolean;
-  /** Callback when retain is toggled (right-click or long press) */
   onToggleRetain?: () => void;
 }
 
-/** Card type to color mapping */
-const CARD_TYPE_COLORS: Record<string, { border: string; glow: string; bg: string; text: string; badge: string; artBg: string }> = {
+const CARD_TYPE_COLORS: Record<string, { border: string; glow: string; bg: string; text: string; badge: string; artBg: string; gradient: string }> = {
   attack: {
-    border: 'border-rune-red/60',
+    border: 'border-red-500/60',
     glow: 'card-glow-red',
-    bg: 'bg-gradient-to-b from-red-950/80 to-rune-card',
-    text: 'text-rune-red',
-    badge: 'bg-rune-red/20 text-rune-red',
+    bg: 'bg-gradient-to-b from-red-950/90 to-[#1a1a3e]',
+    text: 'text-red-400',
+    badge: 'bg-red-500/20 text-red-400 border-red-500/40',
     artBg: 'bg-gradient-to-br from-red-900/60 via-red-950/40 to-transparent',
+    gradient: 'from-red-500/20 via-transparent to-transparent',
   },
   defense: {
-    border: 'border-rune-blue/60',
+    border: 'border-blue-500/60',
     glow: 'card-glow-blue',
-    bg: 'bg-gradient-to-b from-blue-950/80 to-rune-card',
-    text: 'text-rune-blue',
-    badge: 'bg-rune-blue/20 text-rune-blue',
+    bg: 'bg-gradient-to-b from-blue-950/90 to-[#1a1a3e]',
+    text: 'text-blue-400',
+    badge: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
     artBg: 'bg-gradient-to-br from-blue-900/60 via-blue-950/40 to-transparent',
+    gradient: 'from-blue-500/20 via-transparent to-transparent',
   },
   spell: {
-    border: 'border-rune-purple/60',
+    border: 'border-purple-500/60',
     glow: 'card-glow-purple',
-    bg: 'bg-gradient-to-b from-purple-950/80 to-rune-card',
-    text: 'text-rune-purple',
-    badge: 'bg-rune-purple/20 text-rune-purple',
+    bg: 'bg-gradient-to-b from-purple-950/90 to-[#1a1a3e]',
+    text: 'text-purple-400',
+    badge: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
     artBg: 'bg-gradient-to-br from-purple-900/60 via-purple-950/40 to-transparent',
+    gradient: 'from-purple-500/20 via-transparent to-transparent',
   },
 };
 
-/** Card rarity to visual style mapping */
-const CARD_RARITY_STYLES: Record<CardRarity, { border: string; glow: string; stars: string }> = {
-  common: {
-    border: '',
-    glow: '',
-    stars: '',
-  },
-  rare: {
-    border: 'border-emerald-400/70',
-    glow: 'animate-glow-rare',
-    stars: 'text-emerald-400',
-  },
-  epic: {
-    border: 'border-amber-400/70',
-    glow: 'animate-glow-epic',
-    stars: 'text-amber-400',
-  },
+const CARD_RARITY_STYLES: Record<CardRarity, { border: string; glow: string; stars: string; bg: string }> = {
+  common: { border: '', glow: '', stars: '', bg: '' },
+  rare: { border: 'border-emerald-400/70', glow: 'animate-glow-rare', stars: 'text-emerald-400', bg: 'shadow-emerald-500/20' },
+  epic: { border: 'border-amber-400/70', glow: 'animate-glow-epic', stars: 'text-amber-400', bg: 'shadow-amber-500/20' },
 };
 
-/** Card rarity star labels */
 const CARD_RARITY_STARS: Record<CardRarity, string> = {
   common: '',
   rare: '★',
   epic: '★★',
 };
 
-/** Card type emoji icons */
 const CARD_TYPE_ICONS: Record<string, string> = {
   attack: '⚔️',
   defense: '🛡️',
@@ -96,7 +79,6 @@ const Card: React.FC<CardProps> = ({
 
   const canClick = isPlayable && !isEnemyTurn;
 
-  // Long press support for mobile retain toggle
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
 
@@ -125,29 +107,17 @@ const Card: React.FC<CardProps> = ({
   }, []);
 
   const handleClick = useCallback(() => {
-    // If long press was just triggered, ignore the following click
     if (longPressTriggered.current) {
       longPressTriggered.current = false;
       return;
     }
-    if (canClick) {
-      onClick();
-    }
+    if (canClick) onClick();
   }, [canClick, onClick]);
 
-  // Determine border classes: rarity overrides type border for rare/epic
   const borderClass = rarityStyle.border || colors.border;
-
-  // Determine glow classes: combine type glow with rarity glow
   const glowClass = rarityStyle.glow || colors.glow;
-
-  // Upgrade visual: subtle gold halo
-  const upgradeGlow = card.upgraded ? 'ring-1 ring-amber-400/40' : '';
-
-  // Retain visual: cyan glow for retained cards
-  const retainGlow = isRetained ? 'ring-1 ring-cyan-400/50' : '';
-
-  // Epic cards get animated border
+  const upgradeGlow = card.upgraded ? 'ring-2 ring-amber-400/50' : '';
+  const retainGlow = isRetained ? 'ring-2 ring-cyan-400/50' : '';
   const isEpic = card.rarity === 'epic';
   const epicBorder = isEpic ? 'animate-border-epic' : '';
 
@@ -159,84 +129,94 @@ const Card: React.FC<CardProps> = ({
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
       className={`
-        relative rounded-lg border-2 ring-1 ring-white/5
+        relative rounded-xl border-2
         ${borderClass} ${colors.bg} ${glowClass} ${epicBorder}
         transition-all duration-200 ease-out
-        flex flex-col p-1.5 sm:p-2 cursor-pointer touch-target
-        /* Desktop: 120x168, Mobile: 76x106 */
-        w-[76px] h-[106px] sm:w-[120px] sm:h-[168px]
-        ${canClick ? 'hover:scale-110 hover:-translate-y-5 hover:z-20 sm:hover:scale-110 sm:hover:-translate-y-5 active:scale-95 active:-translate-y-2 sm:active:scale-95' : 'opacity-60 cursor-not-allowed'}
-        ${isSelected ? 'scale-110 -translate-y-5 z-20 ring-2 ring-rune-gold' : ''}
-        ${!canClick && !isSelected ? 'opacity-60' : ''}
-        ${upgradeGlow}
-        ${retainGlow}
-        ${showUpgradePreview ? 'scale-105 ring-2 ring-amber-400/60' : ''}
+        flex flex-col p-2 sm:p-2.5 cursor-pointer
+        w-[80px] h-[112px] sm:w-[130px] sm:h-[182px]
+        ${canClick ? 'hover:scale-115 hover:-translate-y-6 hover:z-20 active:scale-95' : 'opacity-50 cursor-not-allowed'}
+        ${isSelected ? 'scale-115 -translate-y-6 z-20 ring-2 ring-amber-400' : ''}
+        ${!canClick && !isSelected ? 'opacity-50' : ''}
+        ${upgradeGlow} ${retainGlow}
+        ${showUpgradePreview ? 'scale-110 ring-2 ring-amber-400/60' : ''}
       `}
+      style={{
+        boxShadow: canClick ? `0 4px 20px rgba(0,0,0,0.4), 0 0 15px ${card.type === 'attack' ? 'rgba(239,68,68,0.15)' : card.type === 'defense' ? 'rgba(59,130,246,0.15)' : 'rgba(168,85,247,0.15)'}` : '0 2px 10px rgba(0,0,0,0.3)',
+      }}
     >
-      {/* Holo gradient overlay - subtle shimmer at top */}
-      <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-white/5 to-transparent rounded-t-lg pointer-events-none" />
+      {/* Top gradient overlay */}
+      <div className={`absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b ${colors.gradient} rounded-t-xl pointer-events-none`} />
+
+      {/* Card texture */}
+      <div className="absolute inset-0 rounded-xl opacity-[0.03] pointer-events-none" style={{
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
+        backgroundSize: '12px 12px',
+      }} />
 
       {/* Cost badge */}
-      <div className="absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-rune-dark border-2 border-rune-gold flex items-center justify-center z-10">
-        <span className="text-rune-gold text-[12px] sm:text-base font-bold">{card.cost}</span>
+      <div className="absolute -top-2 -left-2 sm:-top-2.5 sm:-left-2.5 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gray-900 border-2 border-amber-400/80 flex items-center justify-center z-10 shadow-lg shadow-amber-500/20">
+        <span className="text-amber-400 text-sm sm:text-base font-black">{card.cost}</span>
       </div>
 
       {/* Type badge */}
-      <div className={`absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-sm font-bold ${colors.badge} z-10`}>
+      <div className={`absolute -top-2 -right-2 sm:-top-2.5 sm:-right-2.5 px-1.5 sm:px-2 py-0.5 rounded-lg text-xs sm:text-sm font-bold ${colors.badge} border z-10 shadow-lg`}>
         {icon}
       </div>
 
-      {/* Retain pin indicator */}
+      {/* Retain pin */}
       {isRetained && (
-        <div className="absolute -top-1.5 right-3 sm:-top-2 sm:right-4 text-[12px] sm:text-base z-10 animate-pulse">📌</div>
+        <div className="absolute -top-2 right-4 sm:-top-2.5 sm:right-5 text-sm sm:text-base z-10 animate-pulse">📌</div>
       )}
 
-      {/* Card name with upgrade indicator */}
-      <div className={`text-center text-[12px] sm:text-base font-bold mt-1 sm:mt-2 ${colors.text} drop-shadow-md fantasy-text`}>
+      {/* Card name */}
+      <div className={`text-center text-xs sm:text-sm font-black mt-2 sm:mt-3 ${colors.text} tracking-wider`} style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
         {card.name}
-        {card.upgraded && <span className="text-amber-400 text-[9px] sm:text-xs ml-0.5">+</span>}
+        {card.upgraded && <span className="text-amber-400 text-[10px] sm:text-xs ml-0.5">+</span>}
       </div>
 
       {/* Divider */}
-      <div className={`mx-auto w-3/4 h-px my-0.5 sm:my-1.5 ${colors.border.replace('border-', 'bg-')}`}></div>
+      <div className={`mx-auto w-4/5 h-px my-1 sm:my-1.5 ${colors.border.replace('border-', 'bg-')}`} />
 
       {/* Card art area */}
-      <div className={`relative h-[28px] sm:h-[40px] mx-1 rounded overflow-hidden ${colors.artBg}`}>
-        <div className="absolute inset-0 flex items-center justify-center text-lg sm:text-2xl opacity-60">
+      <div className={`relative h-[30px] sm:h-[44px] mx-1 rounded-lg overflow-hidden ${colors.artBg}`}>
+        <div className={`absolute inset-0 ${
+          card.type === 'attack' ? 'card-art-attack' :
+          card.type === 'defense' ? 'card-art-defense' : 'card-art-spell'
+        }`} />
+        <div className="absolute inset-0 flex items-center justify-center text-2xl sm:text-3xl opacity-60 drop-shadow-lg relative z-10">
           {icon}
         </div>
-        {/* Shimmer effect for rare/epic */}
         {card.rarity !== 'common' && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent animate-shimmer" />
         )}
       </div>
 
       {/* Description */}
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-center text-[9px] sm:text-xs text-gray-300 leading-tight px-0.5 sm:px-1">
+      <div className="flex-1 flex items-center justify-center px-0.5">
+        <p className="text-center text-[9px] sm:text-[11px] text-gray-300 leading-tight">
           {card.description}
         </p>
       </div>
 
-      {/* Exhaust label */}
-      {card.exhaust && (
-        <div className="text-center text-[9px] sm:text-[10px] text-red-400 font-bold mt-0.5">
-          消耗
-        </div>
+      {/* Keywords */}
+      {card.exhaust && !card.ethereal && (
+        <div className="text-center text-[9px] sm:text-[10px] text-red-400 font-bold">消耗</div>
       )}
-
-      {/* Retain label for cards with innate retain */}
+      {card.ethereal && (
+        <div className="text-center text-[9px] sm:text-[10px] text-orange-400 font-bold">虚无</div>
+      )}
       {card.retain && !card.exhaust && (
-        <div className="text-center text-[9px] sm:text-[10px] text-cyan-400 font-bold mt-0.5">
-          保留
-        </div>
+        <div className="text-center text-[9px] sm:text-[10px] text-cyan-400 font-bold">保留</div>
+      )}
+      {card.innate && (
+        <div className="text-center text-[9px] sm:text-[10px] text-yellow-400 font-bold">固有</div>
       )}
 
-      {/* Bottom type indicator + rarity stars */}
+      {/* Bottom rarity */}
       <div className="flex items-center justify-between mt-0.5 sm:mt-1">
-        <div className={`h-0.5 sm:h-1 flex-1 rounded-full ${colors.text.replace('text-', 'bg-')}/30`}></div>
+        <div className={`h-0.5 sm:h-1 flex-1 rounded-full ${colors.text.replace('text-', 'bg-')}/20`} />
         {rarityStars && (
-          <span className={`text-[8px] sm:text-[10px] ml-1 ${rarityStyle.stars}`}>
+          <span className={`text-[8px] sm:text-[10px] ml-1 ${rarityStyle.stars} drop-shadow-lg`}>
             {rarityStars}
           </span>
         )}

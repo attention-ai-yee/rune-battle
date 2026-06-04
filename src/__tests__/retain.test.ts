@@ -84,6 +84,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
       armor: 0,
       statusEffects: [],
       potions: 0,
+      potionCooldown: 0,
       thorns: 0,
     },
     enemies: [makeEnemy()],
@@ -679,7 +680,7 @@ describe('📌 Retain Card Effects', () => {
       effect: { type: 'energyGain', energyGain: 1, hpCost: 0 },
     });
     const state = makeState({
-      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, thorns: 0 },
+      player: { hp: 70, maxHp: 70, energy: 3, maxEnergy: 3, armor: 0, statusEffects: [], potions: 0, potionCooldown: 0, thorns: 0 },
     });
     const result = applyCardEffect(card, state);
     expect(result.player.energy).toBe(4);
