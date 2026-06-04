@@ -368,13 +368,14 @@ const App: React.FC = () => {
 
   // ===== Event =====
   if (state.screen === 'event') {
+    const fullDeck = [...state.drawPile, ...state.discardPile, ...state.hand];
     return (
       <div className="h-[100dvh] w-screen animate-screen-fade-in">
         <MuteButton />
         <EventScreen
-          eventState={state.eventState}
-          onSelectChoice={selectEventChoice}
-          onReturn={returnToMapFromEvent}
+          eventData={state.eventState!}
+          deck={fullDeck}
+          onChoose={selectEventChoice}
         />
       </div>
     );
