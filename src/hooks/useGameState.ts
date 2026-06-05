@@ -826,8 +826,10 @@ export function useGameState() {
     const missingHp = prev.player.maxHp - prev.player.hp;
     const healAmount = Math.floor(missingHp * 0.2);
 
-    // Recover exhausted cards
+    // Recover exhausted cards and hand cards back to drawPile
     const exhaustedCards = prev.exhaustedPile ?? [];
+    const handCards = prev.hand ?? [];
+    const discardCards = prev.discardPile ?? [];
 
     return {
       ...prev,
@@ -844,8 +846,8 @@ export function useGameState() {
       },
       enemies: [],
       hand: [],
-      drawPile: [...prev.drawPile, ...exhaustedCards],
-      discardPile: prev.discardPile,
+      drawPile: [...prev.drawPile, ...handCards, ...discardCards, ...exhaustedCards],
+      discardPile: [],
       exhaustedPile: [],
       cardsPlayedThisTurn: 0,
       pendingStrength: 0,
