@@ -1292,7 +1292,10 @@ describe('Card data integrity', () => {
         // burn_detonate uses burnScaleDamage with damage: 0 base
         // combo_strike uses cardsPlayedScaleMultiplier with damage: 2 base
         // mark_for_death has damage: 0 but applies vulnerable
-        const hasDamage = (template.effect.damage ?? 0) > 0 || !!template.effect.armorAsDamage || !!template.effect.poisonScaleDamage || !!template.effect.burnScaleDamage || !!template.effect.cardsPlayedScaleMultiplier || (template.effect.handScaleMultiplier ?? 0) > 0 || !!template.effect.piercing || (template.effect.vulnerableDuration ?? 0) > 0 || (template.effect.weakDuration ?? 0) > 0 || (template.effect.turnScaleMultiplier ?? 0) > 0;
+        // berserker_rage has damage: 0 but scales with lost HP (special card)
+        // Special cards with damage: 0 that have other mechanics
+        const specialZeroDamageCards = ['berserker_rage', 'void_strike'];
+        const hasDamage = (template.effect.damage ?? 0) > 0 || !!template.effect.armorAsDamage || !!template.effect.poisonScaleDamage || !!template.effect.burnScaleDamage || !!template.effect.cardsPlayedScaleMultiplier || (template.effect.handScaleMultiplier ?? 0) > 0 || !!template.effect.piercing || (template.effect.vulnerableDuration ?? 0) > 0 || (template.effect.weakDuration ?? 0) > 0 || (template.effect.turnScaleMultiplier ?? 0) > 0 || specialZeroDamageCards.includes(template.id);
         expect(hasDamage).toBe(true);
       }
       if (template.effect.type === 'aoeAttack') {

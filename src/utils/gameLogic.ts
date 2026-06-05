@@ -363,8 +363,8 @@ const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
   },
   // 护甲链 (expanded with iron wall archetype)
   {
-    keywords: ['armor', 'defend', 'bastion', 'fortify', 'iron_wall', 'thorn', 'counter'],
-    cardIds: ['defend', 'iron_wall', 'fortify', 'bastion', 'shield_bash', 'armor_engine', 'bulwark', 'iron_focus', 'thorn_shield', 'iron_fortress', 'counter_strike'],
+    keywords: ['armor', 'defend', 'bastion', 'fortify', 'iron_wall', 'thorn', 'counter', 'mirror'],
+    cardIds: ['defend', 'iron_wall', 'fortify', 'bastion', 'shield_bash', 'armor_engine', 'bulwark', 'iron_focus', 'thorn_shield', 'iron_fortress', 'counter_strike', 'mirror_shield', 'thorn_wall'],
   },
   // 力量链 (expanded with blood magic)
   {
@@ -378,13 +378,13 @@ const CARD_CHAINS: { keywords: string[]; cardIds: string[] }[] = [
   },
   // 连击链 (new)
   {
-    keywords: ['combo', 'flurry', 'crescendo', 'strike'],
-    cardIds: ['flurry', 'crescendo_strike', 'combo_strike', 'double_strike', 'twin_strike'],
+    keywords: ['combo', 'flurry', 'crescendo', 'strike', 'cascade'],
+    cardIds: ['flurry', 'crescendo_strike', 'combo_strike', 'double_strike', 'twin_strike', 'cascade'],
   },
   // 吸血/生命链 (new)
   {
-    keywords: ['drain', 'vampiric', 'soul', 'feast', 'heal'],
-    cardIds: ['vampiric_touch', 'soul_drain', 'soul_feast', 'heal', 'regenerate'],
+    keywords: ['drain', 'vampiric', 'soul', 'feast', 'heal', 'sacrifice', 'berserker'],
+    cardIds: ['vampiric_touch', 'soul_drain', 'soul_feast', 'heal', 'regenerate', 'sacrifice', 'berserker_rage'],
   },
   // 易伤链 (new)
   {

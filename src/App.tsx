@@ -9,6 +9,7 @@ import EventScreen from './components/EventScreen';
 import DeckViewer from './components/DeckViewer';
 import { useGameState } from './hooks/useGameState';
 import { sfxClick, bgmStart, bgmStop, isBgmPlaying } from './utils/sounds';
+import { Volume2, VolumeX, Gem, Swords, FlaskConical, Trophy, Skull, Crown, Swords as SwordsIcon, Coins, Layers, RotateCcw, HeartPulse } from 'lucide-react';
 
 // Generate stable particles once
 const titleParticles = Array.from({ length: 60 }, (_, i) => ({
@@ -94,14 +95,14 @@ const App: React.FC = () => {
         w-10 h-10 sm:w-12 sm:h-12
         flex items-center justify-center
         rounded-full bg-gray-900/80 border border-gray-600/40
-        text-lg backdrop-blur-sm
+        backdrop-blur-sm
         hover:bg-gray-800/80 hover:border-gray-500/60
         active:scale-90
         transition-all duration-200
       "
       title={bgmOn ? '静音' : '开启音乐'}
     >
-      {bgmOn ? '🔊' : '🔇'}
+      {bgmOn ? <Volume2 size={18} className="text-gray-300" /> : <VolumeX size={18} className="text-gray-500" />}
     </button>
   );
 
@@ -169,12 +170,16 @@ const App: React.FC = () => {
         <div className="relative z-10 flex flex-col items-center animate-fade-in-slow">
           {/* Crystal orb */}
           <div className="relative mb-8 sm:mb-10">
-            <div className="text-8xl sm:text-9xl animate-float relative z-10 drop-shadow-2xl">🔮</div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-purple-500/20 blur-2xl animate-pulse-slow" />
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 animate-float z-10">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/30 via-blue-500/20 to-purple-600/30 border-2 border-purple-400/40 animate-pulse-glow" />
+              <div className="absolute inset-[6px] rounded-full bg-gradient-to-br from-purple-900/80 to-blue-900/80 border border-purple-500/20" />
+              <div className="absolute inset-[12px] rounded-full bg-gradient-to-br from-purple-600/20 to-transparent flex items-center justify-center">
+                <Gem size={32} className="text-purple-300/60 animate-pulse" />
+              </div>
+              <div className="absolute top-[15%] left-[20%] w-[20%] h-[20%] rounded-full bg-white/10 blur-sm" />
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-500/15 blur-xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-purple-500/20 blur-2xl animate-pulse-slow" />
             </div>
           </div>
 
@@ -189,7 +194,7 @@ const App: React.FC = () => {
             <div className="w-20 sm:w-32 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-500/60" />
-              <span className="text-purple-400/60 text-lg">⚔️</span>
+              <Swords size={16} className="text-purple-400/60" />
               <div className="w-1.5 h-1.5 rounded-full bg-purple-500/60" />
             </div>
             <div className="w-20 sm:w-32 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
@@ -223,28 +228,28 @@ const App: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3 text-xs text-gray-400">
                 <div className="flex items-start gap-2 p-2 bg-gray-800/40 rounded-lg">
-                  <span className="text-lg">⚡</span>
+                  <Gem size={16} className="text-amber-400/60 mt-0.5" />
                   <div>
                     <div className="text-gray-300 font-bold mb-0.5">能量系统</div>
                     <div>每回合3点能量打出卡牌</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-2 p-2 bg-gray-800/40 rounded-lg">
-                  <span className="text-lg">⚔️</span>
+                  <Swords size={16} className="text-red-400/60 mt-0.5" />
                   <div>
                     <div className="text-gray-300 font-bold mb-0.5">卡牌类型</div>
                     <div>攻击·防御·法术三种</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-2 p-2 bg-gray-800/40 rounded-lg">
-                  <span className="text-lg">🧪</span>
+                  <FlaskConical size={16} className="text-emerald-400/60 mt-0.5" />
                   <div>
                     <div className="text-gray-300 font-bold mb-0.5">药水</div>
                     <div>每3回合可用一次</div>
                   </div>
                 </div>
                 <div className="flex items-start gap-2 p-2 bg-gray-800/40 rounded-lg">
-                  <span className="text-lg">🏆</span>
+                  <Trophy size={16} className="text-amber-400/60 mt-0.5" />
                   <div>
                     <div className="text-gray-300 font-bold mb-0.5">目标</div>
                     <div>击败所有敌人通关</div>
@@ -414,7 +419,9 @@ const App: React.FC = () => {
         <div className="relative z-10 flex flex-col items-center animate-fade-in">
           {/* Death skull */}
           <div className="relative mb-8">
-            <div className="text-9xl sm:text-[10rem] animate-bounce-in drop-shadow-2xl">💀</div>
+            <div className="animate-bounce-in drop-shadow-2xl">
+              <Skull size={100} className="text-red-400/80" />
+            </div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-40 h-40 rounded-full bg-red-500/10 blur-3xl animate-pulse-slow" />
             </div>
@@ -427,7 +434,9 @@ const App: React.FC = () => {
 
           {/* Stats */}
           <div className="flex flex-col gap-2.5 mb-10 px-8 py-5 bg-black/40 rounded-2xl border border-red-900/30 min-w-[280px] backdrop-blur-sm">
-            <div className="text-center text-sm text-red-400 font-bold mb-2 tracking-wider">⚔️ 战斗统计</div>
+            <div className="text-center text-sm text-red-400 font-bold mb-2 tracking-wider flex items-center justify-center gap-2">
+              <Swords size={14} /> 战斗统计
+            </div>
             <div className="flex items-center justify-between gap-8">
               <span className="text-sm text-gray-500">造成伤害</span>
               <span className="text-sm text-red-400 font-bold">{state.totalDamageDealt ?? 0}</span>
@@ -510,7 +519,9 @@ const App: React.FC = () => {
         <div className="relative z-10 flex flex-col items-center animate-fade-in">
           {/* Crown */}
           <div className="relative mb-8">
-            <div className="text-[8rem] sm:text-[10rem] animate-bounce-in drop-shadow-2xl">👑</div>
+            <div className="animate-bounce-in drop-shadow-2xl">
+              <Crown size={100} className="text-amber-400/80" />
+            </div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-40 h-40 rounded-full bg-yellow-500/15 blur-3xl animate-pulse-slow" />
             </div>
@@ -524,21 +535,23 @@ const App: React.FC = () => {
 
           {/* Victory stats */}
           <div className="flex flex-col gap-3 mb-10 px-10 py-6 bg-black/30 rounded-2xl border border-amber-500/20 min-w-[320px] backdrop-blur-sm">
-            <div className="text-center text-base text-amber-400 font-bold mb-2 tracking-wider">🏆 通关统计</div>
+            <div className="text-center text-base text-amber-400 font-bold mb-2 tracking-wider flex items-center justify-center gap-2">
+              <Trophy size={16} /> 通关统计
+            </div>
             <div className="flex items-center justify-between gap-10">
-              <span className="text-sm text-gray-400">总伤害</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><Swords size={12} className="text-red-400/50" /> 总伤害</span>
               <span className="text-sm text-red-400 font-bold">{state.totalDamageDealt ?? 0}</span>
             </div>
             <div className="flex items-center justify-between gap-10">
-              <span className="text-sm text-gray-400">总卡牌</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><Layers size={12} className="text-blue-400/50" /> 总卡牌</span>
               <span className="text-sm text-blue-400 font-bold">{state.totalCardsPlayed ?? 0} 张</span>
             </div>
             <div className="flex items-center justify-between gap-10">
-              <span className="text-sm text-gray-400">总回合</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><RotateCcw size={12} className="text-purple-400/50" /> 总回合</span>
               <span className="text-sm text-purple-400 font-bold">{state.turnNumber ?? 0}</span>
             </div>
             <div className="flex items-center justify-between gap-10">
-              <span className="text-sm text-gray-400">获得金币</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><Coins size={12} className="text-amber-400/50" /> 获得金币</span>
               <span className="text-sm text-amber-400 font-bold">{state.gold ?? 0}</span>
             </div>
           </div>

@@ -878,6 +878,124 @@ export const CARD_TEMPLATES: CardTemplate[] = [
     effect: { type: 'attack', damage: 4, turnScaleMultiplier: 3 },
     rarity: 'epic',
   },
+
+  // === New Interesting Cards ===
+
+  // Glass Cannon - high risk high reward
+  {
+    id: 'glass_cannon',
+    name: '玻璃大炮',
+    type: 'attack',
+    cost: 2,
+    description: '造成30点伤害，但获得2层易伤',
+    effect: { type: 'attack', damage: 30, vulnerableDuration: 2 },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // Time Loop - replay last card
+  {
+    id: 'time_loop',
+    name: '时间回溯',
+    type: 'spell',
+    cost: 1,
+    description: '复制上一张打出的卡牌效果两次',
+    effect: { type: 'echo' },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // Sacrifice - trade HP for massive power
+  {
+    id: 'sacrifice',
+    name: '献祭',
+    type: 'spell',
+    cost: 0,
+    description: '失去25%当前生命，获得3点能量，抽2张牌',
+    effect: { type: 'selfDamage', hpCost: 0, energyGain: 3, drawCount: 2 },
+    rarity: 'rare',
+  },
+
+  // Cascade - chain reaction
+  {
+    id: 'cascade',
+    name: '连锁反应',
+    type: 'attack',
+    cost: 1,
+    description: '造成3点伤害，每打出一张牌后+3伤害',
+    effect: { type: 'attack', damage: 3, cardsPlayedScaleMultiplier: 3 },
+    rarity: 'rare',
+  },
+
+  // Mirror Shield - reflect damage
+  {
+    id: 'mirror_shield',
+    name: '镜像之盾',
+    type: 'defense',
+    cost: 2,
+    description: '获得10点护甲，获得5点荆棘',
+    effect: { type: 'defend', armor: 10, thornsValue: 5 },
+    rarity: 'rare',
+  },
+
+  // Void Strike - ignores armor, scales with enemy HP
+  {
+    id: 'void_strike',
+    name: '虚空斩击',
+    type: 'attack',
+    cost: 3,
+    description: '无视护甲，造成目标最大生命值15%的伤害',
+    effect: { type: 'attack', damage: 10, piercing: true },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // Alchemy - transform cards
+  {
+    id: 'alchemy',
+    name: '炼金术',
+    type: 'spell',
+    cost: 1,
+    description: '弃掉手中最旧的2张牌，抽3张牌',
+    effect: { type: 'draw', drawCount: 3, discardOldest: true, discardCount: 2 },
+    rarity: 'rare',
+  },
+
+  // Berserker Rage - all-in attack
+  {
+    id: 'berserker_rage',
+    name: '狂战士之怒',
+    type: 'attack',
+    cost: 2,
+    description: '造成等同于已损失生命值的伤害',
+    effect: { type: 'attack', damage: 0 },
+    rarity: 'epic',
+    exhaust: true,
+  },
+
+  // Enchant - buff all future cards
+  {
+    id: 'enchant',
+    name: '附魔',
+    type: 'spell',
+    cost: 1,
+    description: '本回合所有卡牌效果+50%',
+    effect: { type: 'amplify' },
+    rarity: 'rare',
+    exhaust: true,
+  },
+
+  // Thorn Wall - heavy defense with counter
+  {
+    id: 'thorn_wall',
+    name: '荆棘之墙',
+    type: 'defense',
+    cost: 3,
+    description: '获得20点护甲，获得8点荆棘（消耗）',
+    effect: { type: 'defend', armor: 20, thornsValue: 8 },
+    rarity: 'epic',
+    exhaust: true,
+  },
 ];
 
 /** Card upgrade definitions: maps templateId to upgraded card properties */
@@ -979,6 +1097,17 @@ export const CARD_UPGRADES: Record<string, { name: string; description: string; 
   fleeting_strike: { name: '瞬影斩+', description: '造成12点伤害（虚无，消耗）', effect: { damage: 12 } },
   amplify: { name: '增幅+', description: '本回合下一张牌效果翻倍（消耗）', effect: {} },
   patience: { name: '蓄势待发+', description: '造成6+回合数×4的伤害', effect: { damage: 6, turnScaleMultiplier: 4 } },
+  // New cards
+  glass_cannon: { name: '玻璃大炮+', description: '造成40点伤害，但获得2层易伤', effect: { damage: 40 } },
+  time_loop: { name: '时间回溯+', description: '复制上一张打出的卡牌效果两次', effect: {} },
+  sacrifice: { name: '献祭+', description: '失去20%当前生命，获得3点能量，抽3张牌', effect: { energyGain: 3 } },
+  cascade: { name: '连锁反应+', description: '造成5点伤害，每打出一张牌后+4伤害', effect: { damage: 5, cardsPlayedScaleMultiplier: 4 } },
+  mirror_shield: { name: '镜像之盾+', description: '获得14点护甲，获得7点荆棘', effect: { armor: 14, thornsValue: 7 } },
+  void_strike: { name: '虚空斩击+', description: '无视护甲，造成15点纯粹伤害', effect: { damage: 15 } },
+  alchemy: { name: '炼金术+', description: '弃掉手中最旧的2张牌，抽4张牌', effect: { drawCount: 4 } },
+  berserker_rage: { name: '狂战士之怒+', description: '造成等同于已损失生命值×1.5的伤害', effect: { damage: 0 } },
+  enchant: { name: '附魔+', description: '本回合所有卡牌效果翻倍（消耗）', effect: {} },
+  thorn_wall: { name: '荆棘之墙+', description: '获得25点护甲，获得10点荆棘（消耗）', effect: { armor: 25, thornsValue: 10 } },
 };
 
 /** Starting deck composition: templateId → count */

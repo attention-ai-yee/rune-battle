@@ -4,6 +4,7 @@ import Hand from './Hand';
 import Enemy from './Enemy';
 import Player from './Player';
 import EnergyOrb from './EnergyOrb';
+import { Trophy, Coins, Swords, RotateCcw, HeartPulse, FlaskConical, Layers, Clock, CircleDot, Target, Crosshair } from 'lucide-react';
 
 interface GameBoardProps {
   state: GameState;
@@ -68,7 +69,9 @@ const GameBoard: React.FC<GameBoardProps> = ({
         </div>
 
         <div className="relative z-10 flex flex-col items-center animate-bounce-in">
-          <div className="text-7xl sm:text-8xl mb-6 drop-shadow-2xl">🎉</div>
+          <div className="mb-6">
+            <Trophy size={80} className="text-amber-400/80 drop-shadow-2xl" />
+          </div>
           <h2 className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 mb-3 tracking-wider">
             战斗胜利！
           </h2>
@@ -77,25 +80,25 @@ const GameBoard: React.FC<GameBoardProps> = ({
           {/* Stats */}
           <div className="flex flex-col gap-3 mb-8 px-8 py-5 bg-black/30 rounded-2xl border border-amber-500/20 min-w-[300px] backdrop-blur-sm">
             <div className="flex items-center justify-between gap-8">
-              <span className="text-sm text-gray-400">🪙 获得金币</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><Coins size={14} className="text-amber-400/60" /> 获得金币</span>
               <span className="text-sm text-amber-400 font-bold">{goldEarned}</span>
             </div>
             <div className="flex items-center justify-between gap-8">
-              <span className="text-sm text-gray-400">🃏 使用卡牌</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><Layers size={14} className="text-blue-400/60" /> 使用卡牌</span>
               <span className="text-sm text-blue-400 font-bold">{state.totalCardsPlayed ?? 0} 张</span>
             </div>
             <div className="flex items-center justify-between gap-8">
-              <span className="text-sm text-gray-400">⚔️ 造成伤害</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><Swords size={14} className="text-red-400/60" /> 造成伤害</span>
               <span className="text-sm text-red-400 font-bold">{state.totalDamageDealt ?? 0}</span>
             </div>
             <div className="flex items-center justify-between gap-8">
-              <span className="text-sm text-gray-400">🔄 回合数</span>
+              <span className="text-sm text-gray-400 flex items-center gap-2"><RotateCcw size={14} className="text-purple-400/60" /> 回合数</span>
               <span className="text-sm text-purple-400 font-bold">{state.turnNumber ?? 0}</span>
             </div>
           </div>
 
-          <p className="text-sm text-green-400/80 mb-8">
-            💚 恢复了 {Math.floor((player.maxHp - player.hp) * 0.2)} 点生命
+          <p className="text-sm text-green-400/80 mb-8 flex items-center gap-1">
+            <HeartPulse size={14} /> 恢复了 {Math.floor((player.maxHp - player.hp) * 0.2)} 点生命
           </p>
 
           <button
@@ -168,7 +171,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       {state.isEnemyTurn && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
           <div className="turn-banner-text">
-            ⚡ 敌人回合 ⚡
+            敌人回合
           </div>
         </div>
       )}
@@ -188,8 +191,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
           ))}
 
           {enemies.length === 0 && (
-            <div className="text-gray-500 text-sm italic py-16 animate-fade-in">
-              <span className="text-4xl block mb-3">⚔️</span>
+            <div className="text-gray-500 text-sm italic py-16 animate-fade-in flex flex-col items-center gap-3">
+              <Swords size={32} className="text-gray-600" />
               等待敌人出现...
             </div>
           )}
@@ -200,8 +203,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
       <div className="flex-0 flex items-center justify-center min-h-[50px] sm:min-h-[60px] relative z-10">
         {hasSelectedCard && (
           <div className="animate-pulse flex items-center gap-3">
-            <span className="text-amber-400 text-base sm:text-lg font-bold" style={{ textShadow: '0 0 15px rgba(212,164,76,0.5)' }}>
-              🎯 选择目标
+            <span className="text-amber-400 text-base sm:text-lg font-bold flex items-center gap-2" style={{ textShadow: '0 0 15px rgba(212,164,76,0.5)' }}>
+              <Crosshair size={18} /> 选择目标
             </span>
             <button
               onClick={onCancelSelection}
@@ -253,9 +256,9 @@ const GameBoard: React.FC<GameBoardProps> = ({
                 }
               `}
             >
-              <span className={`text-2xl ${hasPotion ? 'drop-shadow-lg' : 'grayscale'}`}>🧪</span>
+              <FlaskConical size={20} className={hasPotion ? 'text-emerald-400 drop-shadow-lg' : 'text-gray-600 grayscale'} />
               <span className={`text-[10px] font-bold ${hasPotion ? 'text-emerald-400' : 'text-gray-600'}`}>
-                {player.potionCooldown > 0 ? `⏳${player.potionCooldown}` : `×${player.potions}`}
+                {player.potionCooldown > 0 ? <span className="flex items-center gap-0.5"><Clock size={10} />{player.potionCooldown}</span> : `×${player.potions}`}
               </span>
             </button>
 
@@ -269,7 +272,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
                 active:scale-95 transition-all duration-200
               "
             >
-              <span className="text-2xl drop-shadow-lg">📜</span>
+              <Layers size={20} className="text-gray-300 drop-shadow-lg" />
               <span className="text-[10px] text-gray-400 font-bold">牌库</span>
             </button>
           </div>
@@ -295,16 +298,16 @@ const GameBoard: React.FC<GameBoardProps> = ({
           )}
 
           {state.isEnemyTurn && (
-            <div className="px-6 py-3.5 rounded-xl font-bold text-base bg-gray-800/30 border border-gray-700/30 text-gray-500 animate-pulse">
-              ⏳ 等待中...
+            <div className="px-6 py-3.5 rounded-xl font-bold text-base bg-gray-800/30 border border-gray-700/30 text-gray-500 animate-pulse flex items-center gap-2">
+              <Clock size={16} /> 等待中...
             </div>
           )}
         </div>
 
         {/* Retain hint */}
         {!state.isEnemyTurn && hand.length > 0 && (
-          <div className="text-center text-[10px] text-cyan-400/30 mb-2">
-            💡 长按卡牌可保留到下一回合
+          <div className="text-center text-[10px] text-cyan-400/30 mb-2 flex items-center justify-center gap-1">
+            <CircleDot size={10} /> 长按卡牌可保留到下一回合
           </div>
         )}
 
