@@ -9,7 +9,17 @@ import EventScreen from './components/EventScreen';
 import DeckViewer from './components/DeckViewer';
 import { useGameState } from './hooks/useGameState';
 import { sfxClick, bgmStart, bgmStop, isBgmPlaying } from './utils/sounds';
-import { Volume2, VolumeX, Gem, Swords, FlaskConical, Trophy, Skull, Crown, Swords as SwordsIcon, Coins, Layers, RotateCcw, HeartPulse } from 'lucide-react';
+import { Volume2, VolumeX, Gem, Swords, FlaskConical, Trophy, Skull, Crown, Coins, Layers, RotateCcw, HeartPulse } from 'lucide-react';
+
+// Game-icons imports
+import CrystalBall from '@iconify-icons/game-icons/crystal-ball';
+import DeathSkull from '@iconify-icons/game-icons/death-skull';
+import ImperialCrown from '@iconify-icons/game-icons/imperial-crown';
+
+// GameIcon renderer
+const GameIcon: React.FC<{ icon: any; size?: number; className?: string; color?: string }> = ({ icon, size = 64, className = '', color }) => (
+  <svg viewBox={icon.viewBox || '0 0 512 512'} width={size} height={size} className={className} fill={color || 'currentColor'} dangerouslySetInnerHTML={{ __html: icon.body }} />
+);
 
 // Generate stable particles once
 const titleParticles = Array.from({ length: 60 }, (_, i) => ({
@@ -170,16 +180,11 @@ const App: React.FC = () => {
         <div className="relative z-10 flex flex-col items-center animate-fade-in-slow">
           {/* Crystal orb */}
           <div className="relative mb-8 sm:mb-10">
-            <div className="relative w-24 h-24 sm:w-32 sm:h-32 animate-float z-10">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500/30 via-blue-500/20 to-purple-600/30 border-2 border-purple-400/40 animate-pulse-glow" />
-              <div className="absolute inset-[6px] rounded-full bg-gradient-to-br from-purple-900/80 to-blue-900/80 border border-purple-500/20" />
-              <div className="absolute inset-[12px] rounded-full bg-gradient-to-br from-purple-600/20 to-transparent flex items-center justify-center">
-                <Gem size={32} className="text-purple-300/60 animate-pulse" />
-              </div>
-              <div className="absolute top-[15%] left-[20%] w-[20%] h-[20%] rounded-full bg-white/10 blur-sm" />
+            <div className="relative animate-float z-10" style={{ color: '#a855f7', filter: 'drop-shadow(0 0 30px rgba(168,85,247,0.5))' }}>
+              <GameIcon icon={CrystalBall} size={120} />
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-purple-500/20 blur-2xl animate-pulse-slow" />
+              <div className="w-40 h-40 rounded-full bg-purple-500/15 blur-3xl animate-pulse-slow" />
             </div>
           </div>
 
@@ -419,8 +424,8 @@ const App: React.FC = () => {
         <div className="relative z-10 flex flex-col items-center animate-fade-in">
           {/* Death skull */}
           <div className="relative mb-8">
-            <div className="animate-bounce-in drop-shadow-2xl">
-              <Skull size={100} className="text-red-400/80" />
+            <div className="animate-bounce-in" style={{ color: '#ef4444', filter: 'drop-shadow(0 0 30px rgba(239,68,68,0.5))' }}>
+              <GameIcon icon={DeathSkull} size={120} />
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-40 h-40 rounded-full bg-red-500/10 blur-3xl animate-pulse-slow" />
@@ -519,11 +524,11 @@ const App: React.FC = () => {
         <div className="relative z-10 flex flex-col items-center animate-fade-in">
           {/* Crown */}
           <div className="relative mb-8">
-            <div className="animate-bounce-in drop-shadow-2xl">
-              <Crown size={100} className="text-amber-400/80" />
+            <div className="animate-bounce-in" style={{ color: '#d4a44c', filter: 'drop-shadow(0 0 30px rgba(212,164,76,0.5))' }}>
+              <GameIcon icon={ImperialCrown} size={120} />
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-40 h-40 rounded-full bg-yellow-500/15 blur-3xl animate-pulse-slow" />
+              <div className="w-40 h-40 rounded-full bg-amber-500/10 blur-3xl animate-pulse-slow" />
             </div>
           </div>
 

@@ -2,6 +2,28 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { EnemyInstance, StatusEffect } from '../types/game';
 import { Swords, Shield, ArrowUp, HeartPulse, Skull, Droplets, Flame, Snowflake, Target, Brain, Zap, ShieldAlert } from 'lucide-react';
 
+// Game-icons imports
+import WolfHead from '@iconify-icons/game-icons/wolf-head';
+import Direwolf from '@iconify-icons/game-icons/direwolf';
+import FloatingGhost from '@iconify-icons/game-icons/floating-ghost';
+import GoblinHead from '@iconify-icons/game-icons/goblin-head';
+import Skeleton from '@iconify-icons/game-icons/skeleton';
+import Imp from '@iconify-icons/game-icons/imp';
+import WizardFace from '@iconify-icons/game-icons/wizard-face';
+import BlackKnightHelm from '@iconify-icons/game-icons/black-knight-helm';
+import RockGolem from '@iconify-icons/game-icons/rock-golem';
+import Necromancer from '@iconify-icons/game-icons/raise-skeleton';
+import DragonHead from '@iconify-icons/game-icons/dragon-head';
+import DoubleDragon from '@iconify-icons/game-icons/double-dragon';
+import SpikedDragonHead from '@iconify-icons/game-icons/spiked-dragon-head';
+import HornedReptile from '@iconify-icons/game-icons/horned-reptile';
+import Ogre from '@iconify-icons/game-icons/ogre';
+import Troll from '@iconify-icons/game-icons/troll';
+import OrcHead from '@iconify-icons/game-icons/orc-head';
+import WitchFace from '@iconify-icons/game-icons/witch-face';
+import FemaleVampire from '@iconify-icons/game-icons/female-vampire';
+import BeastEye from '@iconify-icons/game-icons/beast-eye';
+
 interface EnemyProps {
   enemy: EnemyInstance;
   index: number;
@@ -9,6 +31,47 @@ interface EnemyProps {
   isSelected: boolean;
   onTarget: (index: number) => void;
 }
+
+// Icon component that renders game-icons SVG
+const GameIcon: React.FC<{ icon: any; size?: number; className?: string; color?: string }> = ({ icon, size = 64, className = '', color }) => {
+  const svg = icon.body;
+  return (
+    <svg
+      viewBox={icon.viewBox || '0 0 512 512'}
+      width={size}
+      height={size}
+      className={className}
+      fill={color || 'currentColor'}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+};
+
+// Map enemy templateId to game-icons
+const ENEMY_ICON_MAP: Record<string, { icon: any; color: string; glow: string }> = {
+  // Layer 1 - Forest
+  wolf: { icon: WolfHead, color: '#9ca3af', glow: 'rgba(156,163,175,0.4)' },
+  forest_spirit: { icon: FloatingGhost, color: '#34d399', glow: 'rgba(52,211,153,0.4)' },
+  goblin: { icon: GoblinHead, color: '#22c55e', glow: 'rgba(34,197,94,0.4)' },
+  skeleton: { icon: Skeleton, color: '#d1d5db', glow: 'rgba(209,213,219,0.3)' },
+
+  // Layer 2 - Volcano
+  fire_imp: { icon: Imp, color: '#f97316', glow: 'rgba(249,115,22,0.4)' },
+  fire_mage: { icon: WizardFace, color: '#ef4444', glow: 'rgba(239,68,68,0.4)' },
+  shadow_priest: { icon: WitchFace, color: '#a855f7', glow: 'rgba(168,85,247,0.4)' },
+  shadow_knight: { icon: BlackKnightHelm, color: '#6b7280', glow: 'rgba(107,114,128,0.4)' },
+  lava_golem: { icon: RockGolem, color: '#f97316', glow: 'rgba(249,115,22,0.5)' },
+  necromancer: { icon: Necromancer, color: '#7c3aed', glow: 'rgba(124,58,237,0.4)' },
+
+  // Layer 3 - Dragon
+  drake: { icon: HornedReptile, color: '#ef4444', glow: 'rgba(239,68,68,0.4)' },
+  dragon_guardian: { icon: DragonHead, color: '#f97316', glow: 'rgba(249,115,22,0.5)' },
+  ancient_dragon: { icon: DoubleDragon, color: '#dc2626', glow: 'rgba(220,38,38,0.5)' },
+  whelp: { icon: SpikedDragonHead, color: '#f97316', glow: 'rgba(249,115,22,0.3)' },
+
+  // Fallback
+  default: { icon: BeastEye, color: '#ef4444', glow: 'rgba(239,68,68,0.4)' },
+};
 
 const INTENT_CONFIG: Record<string, { Icon: React.FC<{size?:number;className?:string}>; color: string; bg: string; border: string }> = {
   attack: { Icon: Swords, color: 'text-red-400', bg: 'bg-red-900/50', border: 'border-red-500/60' },
@@ -29,97 +92,6 @@ interface FloatingEntry {
   value: number;
   type: FloatType;
 }
-
-// CSS-drawn enemy art based on templateId
-const EnemyArt: React.FC<{ templateId: string; size?: number }> = ({ templateId, size = 80 }) => {
-  // Different visual styles for different enemy types
-  const getEnemyStyle = () => {
-    if (templateId.includes('wolf') || templateId.includes('drake')) {
-      return { shape: 'beast', color1: '#ef4444', color2: '#991b1b', accent: '#fca5a5' };
-    }
-    if (templateId.includes('spirit') || templateId.includes('priest') || templateId.includes('mage')) {
-      return { shape: 'magic', color1: '#a855f7', color2: '#6b21a8', accent: '#d8b4fe' };
-    }
-    if (templateId.includes('skeleton') || templateId.includes('knight') || templateId.includes('guardian')) {
-      return { shape: 'knight', color1: '#6b7280', color2: '#374151', accent: '#d1d5db' };
-    }
-    if (templateId.includes('goblin') || templateId.includes('imp')) {
-      return { shape: 'goblin', color1: '#22c55e', color2: '#14532d', accent: '#86efac' };
-    }
-    if (templateId.includes('dragon') || templateId.includes('golem')) {
-      return { shape: 'dragon', color1: '#f97316', color2: '#7c2d12', accent: '#fdba74' };
-    }
-    if (templateId.includes('necro') || templateId.includes('shadow')) {
-      return { shape: 'undead', color1: '#7c3aed', color2: '#3b0764', accent: '#c4b5fd' };
-    }
-    return { shape: 'default', color1: '#ef4444', color2: '#991b1b', accent: '#fca5a5' };
-  };
-
-  const style = getEnemyStyle();
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      {/* Base glow */}
-      <div className="absolute inset-0 rounded-full opacity-30 blur-xl" style={{ background: style.color1 }} />
-
-      {/* Body */}
-      {style.shape === 'beast' && (
-        <>
-          <div className="absolute inset-[10%] rounded-full border-2 opacity-60" style={{ borderColor: style.color1, background: `linear-gradient(135deg, ${style.color2}, ${style.color1}40)` }} />
-          <div className="absolute top-[20%] left-[25%] w-[15%] h-[15%] rounded-full" style={{ background: style.accent }} />
-          <div className="absolute top-[20%] right-[25%] w-[15%] h-[15%] rounded-full" style={{ background: style.accent }} />
-          <div className="absolute top-[45%] left-[35%] w-[30%] h-[8%] rounded-full" style={{ background: style.color1, opacity: 0.6 }} />
-        </>
-      )}
-      {style.shape === 'magic' && (
-        <>
-          <div className="absolute inset-[15%] rotate-45 border-2 opacity-50" style={{ borderColor: style.color1, background: `linear-gradient(135deg, ${style.color2}, ${style.color1}30)` }} />
-          <div className="absolute inset-[30%] rounded-full border opacity-40" style={{ borderColor: style.accent }} />
-          <div className="absolute inset-[40%] rounded-full opacity-60" style={{ background: `radial-gradient(circle, ${style.accent}, transparent)` }} />
-        </>
-      )}
-      {style.shape === 'knight' && (
-        <>
-          <div className="absolute inset-[10%] rounded-t-full border-2 opacity-60" style={{ borderColor: style.color1, background: `linear-gradient(180deg, ${style.color2}, ${style.color1}40)` }} />
-          <div className="absolute top-[25%] left-[25%] w-[50%] h-[15%] rounded opacity-40" style={{ background: style.accent }} />
-          <div className="absolute top-[50%] left-[30%] w-[10%] h-[10%] rounded-full" style={{ background: style.accent }} />
-          <div className="absolute top-[50%] right-[30%] w-[10%] h-[10%] rounded-full" style={{ background: style.accent }} />
-        </>
-      )}
-      {style.shape === 'goblin' && (
-        <>
-          <div className="absolute inset-[15%] rounded-full border-2 opacity-60" style={{ borderColor: style.color1, background: `linear-gradient(135deg, ${style.color2}, ${style.color1}30)` }} />
-          <div className="absolute top-[15%] left-[15%] w-[25%] h-[25%] rounded-full border-2 opacity-70" style={{ borderColor: style.color1, background: style.color2 }} />
-          <div className="absolute top-[15%] right-[15%] w-[25%] h-[25%] rounded-full border-2 opacity-70" style={{ borderColor: style.color1, background: style.color2 }} />
-          <div className="absolute top-[45%] left-[30%] w-[40%] h-[10%] rounded" style={{ background: style.color1, opacity: 0.5 }} />
-        </>
-      )}
-      {style.shape === 'dragon' && (
-        <>
-          <div className="absolute inset-[5%] rounded-full border-2 opacity-60" style={{ borderColor: style.color1, background: `linear-gradient(135deg, ${style.color2}, ${style.color1}40)` }} />
-          <div className="absolute top-[10%] left-[10%] w-[30%] h-[30%] opacity-50" style={{ background: `linear-gradient(135deg, ${style.color1}, transparent)`, clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
-          <div className="absolute top-[10%] right-[10%] w-[30%] h-[30%] opacity-50" style={{ background: `linear-gradient(225deg, ${style.color1}, transparent)`, clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
-          <div className="absolute top-[50%] left-[35%] w-[30%] h-[8%] rounded" style={{ background: style.accent, opacity: 0.6 }} />
-        </>
-      )}
-      {style.shape === 'undead' && (
-        <>
-          <div className="absolute inset-[10%] border-2 opacity-50" style={{ borderColor: style.color1, background: `linear-gradient(180deg, ${style.color2}, ${style.color1}20)` }} />
-          <div className="absolute inset-[25%] rounded-full border opacity-30" style={{ borderColor: style.accent }} />
-          <div className="absolute top-[35%] left-[25%] w-[12%] h-[12%] rounded-full" style={{ background: style.accent, opacity: 0.7 }} />
-          <div className="absolute top-[35%] right-[25%] w-[12%] h-[12%] rounded-full" style={{ background: style.accent, opacity: 0.7 }} />
-        </>
-      )}
-      {style.shape === 'default' && (
-        <>
-          <div className="absolute inset-[10%] rounded-full border-2 opacity-60" style={{ borderColor: style.color1, background: `linear-gradient(135deg, ${style.color2}, ${style.color1}40)` }} />
-          <div className="absolute top-[30%] left-[30%] w-[15%] h-[15%] rounded-full" style={{ background: style.accent }} />
-          <div className="absolute top-[30%] right-[30%] w-[15%] h-[15%] rounded-full" style={{ background: style.accent }} />
-        </>
-      )}
-    </div>
-  );
-};
 
 const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, onTarget }) => {
   const hpPercent = Math.max(0, (enemy.hp / enemy.maxHp) * 100);
@@ -180,6 +152,9 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
     }
   };
 
+  // Get enemy icon config
+  const iconConfig = ENEMY_ICON_MAP[enemy.templateId] || ENEMY_ICON_MAP.default;
+
   return (
     <div
       onClick={isTargetable ? () => onTarget(index) : undefined}
@@ -199,7 +174,7 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
       }}
     >
       {/* Enemy platform glow */}
-      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-3/4 h-6 bg-gradient-to-t from-purple-500/15 to-transparent rounded-full blur-lg" />
+      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-3/4 h-6 rounded-full blur-lg" style={{ background: `linear-gradient(to top, ${iconConfig.glow}, transparent)` }} />
 
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
@@ -245,14 +220,16 @@ const Enemy: React.FC<EnemyProps> = ({ enemy, index, isTargetable, isSelected, o
         </span>
       </div>
 
-      {/* Enemy art */}
-      <div className={`mb-3 ${enemy.isFrozen ? 'opacity-40' : 'animate-float-slow'} ${isCritical ? 'animate-pulse' : ''}`}
+      {/* Enemy art - professional game-icons */}
+      <div
+        className={`mb-3 ${enemy.isFrozen ? 'opacity-40' : 'animate-float-slow'} ${isCritical ? 'animate-pulse' : ''}`}
         style={{
           animationDelay: `${index * 0.7}s`,
-          filter: `drop-shadow(0 0 ${15 + (100 - hpPercent) * 0.2}px rgba(${isCritical ? '239,68,68' : isLowHp ? '249,115,22' : '168,85,247'},${0.5 + (100 - hpPercent) * 0.005}))`,
+          filter: `drop-shadow(0 0 ${15 + (100 - hpPercent) * 0.2}px ${iconConfig.glow})`,
+          color: iconConfig.color,
         }}
       >
-        <EnemyArt templateId={enemy.templateId} size={70} />
+        <GameIcon icon={iconConfig.icon} size={70} />
       </div>
 
       {/* Name */}
