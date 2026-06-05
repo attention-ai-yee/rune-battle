@@ -20,7 +20,7 @@ import HornedReptile from '@iconify-icons/game-icons/horned-reptile';
 import WitchFace from '@iconify-icons/game-icons/witch-face';
 import BeastEye from '@iconify-icons/game-icons/beast-eye';
 import Campfire from '@iconify-icons/game-icons/campfire';
-import TreasureChest from '@iconify-icons/game-icons/treasure-chest';
+import Shop from '@iconify-icons/game-icons/shop';
 import CrystalBall from '@iconify-icons/game-icons/crystal-ball';
 import CrossedSwords from '@iconify-icons/game-icons/crossed-swords';
 import MountedKnight from '@iconify-icons/game-icons/mounted-knight';
@@ -63,7 +63,7 @@ const ENEMY_ICONS: Record<string, { icon: any; color: string }> = {
 const NODE_TYPE_ICONS: Record<string, { icon: any; color: string; glow: string }> = {
   battle: { icon: CrossedSwords, color: '#ef4444', glow: 'rgba(239,68,68,0.4)' },
   elite: { icon: MountedKnight, color: '#f97316', glow: 'rgba(249,115,22,0.5)' },
-  shop: { icon: TreasureChest, color: '#d4a44c', glow: 'rgba(212,164,76,0.4)' },
+  shop: { icon: Shop, color: '#d4a44c', glow: 'rgba(212,164,76,0.4)' },
   event: { icon: CrystalBall, color: '#a855f7', glow: 'rgba(168,85,247,0.4)' },
   rest: { icon: Campfire, color: '#22c55e', glow: 'rgba(34,197,94,0.4)' },
 };
