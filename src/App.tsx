@@ -360,13 +360,13 @@ const App: React.FC = () => {
 
   // ===== Shop =====
   if (state.screen === 'shop') {
+    const fullDeck = [...state.drawPile, ...state.discardPile, ...state.hand];
     return (
       <div className="h-[100dvh] w-screen animate-screen-fade-in">
         <MuteButton />
         <ShopScreen
-          shopState={state.shopState}
           gold={state.gold}
-          deckSize={state.drawPile.length + state.discardPile.length + state.hand.length}
+          deck={fullDeck}
           onBuyCard={buyCard}
           onRemoveCard={removeCard}
           onRestHeal={restHeal}
